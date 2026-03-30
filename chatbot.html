@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chatbot – Aftrek Innovatie-Inkomsten</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f4f8; height: 100vh; display: flex; flex-direction: column; }
+
+  header {
+    background: linear-gradient(135deg, #1a3a5c, #2563eb);
+    color: white; padding: 16px 24px;
+    display: flex; align-items: center; gap: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  header .icon { font-size: 28px; }
+  header h1 { font-size: 18px; font-weight: 600; }
+  header p { font-size: 12px; opacity: 0.8; margin-top: 2px; }
+
+  .container { display: flex; flex: 1; overflow: hidden; }
+
+  /* Sidebar */
+  .sidebar {
+    width: 300px; background: #fff; border-right: 1px solid #e2e8f0;
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .sidebar-title {
+    padding: 14px 16px; font-size: 12px; font-weight: 700;
+    color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;
+    border-bottom: 1px solid #e2e8f0; background: #f8fafc;
+  }
+  .faq-list { overflow-y: auto; flex: 1; }
+  .faq-item {
+    padding: 10px 16px; font-size: 13px; color: #374151;
+    cursor: pointer; border-bottom: 1px solid #f1f5f9;
+    transition: background 0.15s;
+    display: flex; gap: 8px; align-items: flex-start;
+  }
+  .faq-item:hover { background: #eff6ff; color: #1d4ed8; }
+  .faq-item .num {
+    font-size: 11px; font-weight: 700; color: #2563eb;
+    background: #eff6ff; border-radius: 4px;
+    padding: 1px 5px; min-width: 24px; text-align: center;
+    margin-top: 1px;
+  }
+
+  /* Chat area */
+  .chat-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  .messages {
+    flex: 1; overflow-y: auto; padding: 20px;
+    display: flex; flex-direction: column; gap: 16px;
+  }
+
+  .message { display: flex; gap: 10px; max-width: 85%; }
+  .message.user { align-self: flex-end; flex-direction: row-reverse; }
+  .message.bot { align-self: flex-start; }
+
+  .avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .user .avatar { background: #2563eb; color: white; }
+  .bot .avatar { background: #1a3a5c; color: white; }
+
+  .bubble {
+    padding: 12px 16px; border-radius: 16px;
+    font-size: 14px; line-height: 1.6; max-width: 100%;
+  }
+  .user .bubble {
+    background: #2563eb; color: white;
+    border-bottom-right-radius: 4px;
+  }
+  .bot .bubble {
+    background: white; color: #1e293b;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    border: 1px solid #e2e8f0;
+  }
+  .bot .bubble b { color: #1a3a5c; }
+  .bot .bubble .source {
+    margin-top: 10px; font-size: 11px; color: #94a3b8;
+    border-top: 1px solid #f1f5f9; padding-top: 8px;
+  }
+
+  /* Suggesties */
+  .suggestions {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    padding: 0 20px 8px;
+  }
+  .suggestion {
+    font-size: 12px; padding: 6px 12px;
+    background: #eff6ff; color: #1d4ed8;
+    border: 1px solid #bfdbfe; border-radius: 20px;
+    cursor: pointer; transition: background 0.15s;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    max-width: 280px;
+  }
+  .suggestion:hover { background: #dbeafe; }
+
+  /* Input */
+  .input-area {
+    padding: 16px 20px; background: white;
+    border-top: 1px solid #e2e8f0;
+    display: flex; gap: 10px; align-items: flex-end;
+  }
+  .input-area textarea {
+    flex: 1; border: 1.5px solid #e2e8f0; border-radius: 12px;
+    padding: 10px 14px; font-size: 14px; resize: none;
+    font-family: inherit; outline: none; max-height: 120px;
+    transition: border-color 0.2s;
+  }
+  .input-area textarea:focus { border-color: #2563eb; }
+  .input-area button {
+    background: #2563eb; color: white; border: none;
+    border-radius: 10px; padding: 10px 18px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: background 0.15s; white-space: nowrap;
+  }
+  .input-area button:hover { background: #1d4ed8; }
+  .input-area button:disabled { background: #94a3b8; cursor: not-allowed; }
+
+  .welcome { text-align: center; padding: 40px 20px; color: #64748b; }
+  .welcome .icon { font-size: 48px; margin-bottom: 12px; }
+  .welcome h2 { font-size: 20px; color: #1e293b; margin-bottom: 8px; }
+  .welcome p { font-size: 14px; line-height: 1.6; }
+
+  @media (max-width: 700px) {
+    .sidebar { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="icon">⚖️</div>
+  <div>
+    <h1>Chatbot – Aftrek voor Innovatie-Inkomsten</h1>
+    <p>Gebaseerd op de officiële FAQ van de FOD Financiën (2018)</p>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="sidebar">
+    <div class="sidebar-title">📋 Alle FAQ-vragen</div>
+    <div class="faq-list" id="faqList"></div>
+  </div>
+
+  <div class="chat-area">
+    <div class="messages" id="messages">
+      <div class="welcome">
+        <div class="icon">💡</div>
+        <h2>Welkom!</h2>
+        <p>Stel een vraag over de <strong>aftrek voor innovatie-inkomsten</strong>.<br>
+        Of klik op een vraag in de zijbalk om direct een antwoord te krijgen.</p>
+      </div>
+    </div>
+
+    <div class="suggestions" id="suggestions">
+      <div class="suggestion" onclick="askQuestion('Wie kan aanspraak maken op de aftrek?')">Wie kan aanspraak maken?</div>
+      <div class="suggestion" onclick="askQuestion('Welk percentage bedraagt de aftrek?')">Welk percentage?</div>
+      <div class="suggestion" onclick="askQuestion('Welke intellectuele eigendomsrechten komen in aanmerking?')">Welke IE-rechten?</div>
+      <div class="suggestion" onclick="askQuestion('Wat zijn de formaliteiten?')">Formaliteiten?</div>
+      <div class="suggestion" onclick="askQuestion('Wanneer treedt de wet in werking?')">Inwerkingtreding?</div>
+    </div>
+
+    <div class="input-area">
+      <textarea id="userInput" placeholder="Stel uw vraag over de innovatie-aftrek…" rows="1"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage()}"
+        oninput="autoResize(this)"></textarea>
+      <button onclick="sendMessage()" id="sendBtn">Verstuur</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const FAQ_DATA = [
+  {
+    "num": 1,
+    "vraag": "Wie kan aanspraak maken op de aftrek voor innovatie-inkomsten?",
+    "antwoord": "Die maatregel heeft een algemene draagwijdte. Ze is van toepassing op alle binnenlandse\nvennootschappen en, voor de innovatie-inkomsten met betrekking tot de intellectuele eigendomsrechten\ndie verbonden zijn met hun Belgische inrichtingen, op de buitenlandse vennootschappen, wat ook de\ngrootte ervan is, die volle eigenaar, mede-eigenaar of vruchtgebruiker zijn van een in aanmerking komend\nintellectueel eigendomsrecht of titularis van licenties of rechten die verbonden zijn aan zo'n recht.\nHet volstaat dat een vennootschap over enig recht beschikt voor het gebruik van de intellectuele\neigendom. Daarmee wordt vermeden dat in het kader van gezamenlijke ontwikkelingsprojecten, waarbij\nslechts één partij de formele eigenaar is van de gezamenlijk ontwikkelde intellectuele eigendom, de andere\npartij of partijen, enkel en alleen omdat zij geen houder van de intellectuele eigendom is of zijn, van de\naftrek voor innovatie-inkomsten wordt of worden uitgesloten. De bijdrage die geleverd wordt aan het\n\ngezamenlijk ontwikkelen van een intellectuele eigendom zal de vennootschap in kwestie recht geven om\naanspraak te maken op de aftrek voor innovatie-inkomsten (Parl. St., Kamer, zitting 2016-2017, DOC 54\n2235/001, blz. 10)."
+  },
+  {
+    "num": 2,
+    "vraag": "De intellectuele eigendomsrechten – Welke intellectuele eigendomsrechten komen in aanmerking?",
+    "antwoord": "Zoals verduidelijkt in nr. 5, werd het toepassingsgebied van de nieuwe aftrek uitgebreid en heeft ze niet\nalleen meer betrekking op octrooien maar ook op andere intellectuele eigendomsrechten. Overeenkomstig\nartikel 205/1, § 2, 1°, WIB 92, komen de volgende intellectuele eigendomsrechten in aanmerking voor de\naftrek voor innovatie-inkomsten:\na) de octrooien of aanvullende beschermingscertificaten die niet door de vennootschap, een licentienemer\nof een verbonden onderneming zijn gebruikt voor de verkoop van goederen of diensten aan onafhankelijke\nderden vóór 01.01.2007;\nb) de kwekersrechten waarvoor de aanvraag is ingediend of die door de vennootschap zijn verworven, ten\nvroegste op 01.07.2016;\nc) de weesgeneesmiddelen, beperkt tot de eerste 10 jaar dat ze als dusdanig zijn ingeschreven in het\nEuropees Register van weesgeneesmiddelen, en waarvan de aanvraag is ingediend of die door de\nvennootschap zijn verworven, ten vroegste op 01.07.2016;\nd) de na 30.06.2016 van overheidswege toegekende data- of marktexclusiviteit beperkt tot de eerste 11\njaar bij toepassing van:\n-      artikel 59 van de Verordening (EG) nr. 1107/2009 van het Europees Parlement en de Raad van 21\noktober 2009 betreffende het op de markt brengen van gewasbeschermingsmiddelen en tot intrekking\nvan de Richtlijnen 79/117/EEG en 91/414/EEG van de Raad;\n-      artikel 14.11 van de Verordening (EG) nr. 726/2004 van het Europees Parlement en de Raad van 31\nmaart 2004 tot vaststelling van communautaire procedures voor het verlenen van vergunningen en het\ntoezicht op geneesmiddelen voor menselijk en diergeneeskundig gebruik en tot oprichting van een\nEuropees geneesmiddelenbureau;\n-      de artikelen 10.1, 10.5 of 74bis van de Richtlijn Nr. 2001/83/EG van het Europees Parlement en de\nRaad van 6 november 2001 tot vaststelling van een communautair wetboek betreffende\ngeneesmiddelen voor menselijk gebruik;\n-      de artikelen 13.1, 13.5 of 13bis van de Richtlijn Nr. 2001/82/EG van het Europees Parlement en de\nRaad van 6 november 2001 tot vaststelling van een communautair wetboek betreffende\ngeneesmiddelen voor diergeneeskundig gebruik;\n-      artikel 8 van de Verordening (EG) nr. 141/2000 van het Europees Parlement en de Raad van 16\ndecember 1999 inzake weesgeneesmiddelen;\n-      analoge bepalingen van nationaal of internationaal recht;\ne) auteursrechtelijk beschermde computerprogramma's, met inbegrip van een afgeleid werk of aanpassing\nvan een bestaand computerprogramma, dat is voortgevloeid uit een in artikel 2753, § 3, WIB 92, bedoeld\nonderzoeks- of ontwikkelingsproject of - programma en nog geen inkomsten heeft voortgebracht vóór\n01.07.2016.\n\nEr wordt opgemerkt dat alle aan marketing gerelateerde intellectuele eigendom van de aftrek voor\ninnovatie-inkomsten is uitgesloten. Inkomsten uit de benaming, logo's, vormen, merken, … die bedoeld zijn\nom een product of dienst te onderscheiden, evenals gebruiksmodellen, komen niet in aanmerking (zie in die\nzin Parl. St., Kamer, zitting 2016-2017, DOC 54 2235/001, blz. 11)."
+  },
+  {
+    "num": 3,
+    "vraag": "De intellectuele eigendomsrechten – Moeten ze worden geboekt op het actief van de balans van de jaarrekening van de vennootschap?",
+    "antwoord": "De intellectuele eigendomsrechten waarvoor de vennootschap het voordeel van de aftrek (vrijstelling) wenst te genieten, moeten worden geboekt op het actief van de balans van de jaarrekening. Er wordt aan herinnerd dat het KB 18.12.2015 het Belgische boekhoudrecht in overeenstemming heeft gebracht met de Europese richtlijn 2013/34/EU."
+  },
+  {
+    "num": 4,
+    "vraag": "De intellectuele eigendomsrechten – Is het vereist dat de vennootschap een verworven intellectueel eigendomsrecht verder verbetert?",
+    "antwoord": "De aftrek voor innovatie-inkomsten is van toepassing zowel op de door de vennootschap geheel of gedeeltelijk zelf ontwikkelde als op de door haar verworven intellectuele eigendomsrechten. Er is impliciet vereist dat de verworven intellectuele eigendomsrechten door de vennootschap geheel of gedeeltelijk verder zijn verbeterd."
+  },
+  {
+    "num": 5,
+    "vraag": "De intellectuele eigendomsrechten – Op welk moment wordt een computerprogramma beschouwd als auteursrechtelijk beschermd?",
+    "antwoord": "De categorie van 'auteursrechtelijk beschermde computerprogramma's' wijkt af van de overige vier categorieën van intellectuele eigendomsrechten. Overeenkomstig artikel XI.295 van het Wetboek van Economisch Recht verkrijgt een computerprogramma bescherming door het auteursrecht op het moment van zijn creatie, zonder enige formaliteit."
+  },
+  {
+    "num": 6,
+    "vraag": "De intellectuele eigendomsrechten – Wie is titularis van het vermogensrecht met betrekking tot een computerprogramma dat in het kader van een arbeidscontract of andere is ontwikkeld en dat door het auteursrecht wordt beschermd?",
+    "antwoord": "Artikel XI.296 van het Wetboek van Economisch recht bepaalt dat alleen de werkgever geacht wordt\nverkrijger te zijn van de vermogensrechten met betrekking tot computerprogramma's die zijn gemaakt\ndoor een of meer werknemers of beambten bij de uitoefening van hun taken of in opdracht van hun\nwerkgever, tenzij bij overeenkomst of statutair anders is bepaald.\n\nM.a.w., hoewel er steeds een natuurlijke persoon (werknemer, bedrijfsleider, onderaannemer, …) aan de\nbasis ligt van het ontwikkelde programma, wordt overeenkomstig artikel XI.296 van het Wetboek van\nEconomisch recht enkel de werkgever geacht verkrijger te zijn van de vermogensrechten met betrekking\ntot de computerprogramma's die zijn gemaakt, tenzij bij overeenkomst of statutair anders is bepaald.\nBijgevolg wordt de vennootschap geacht zelf het auteursrechtelijk beschermde computerprogramma te\nhebben ontwikkeld.\nUit de parlementaire stukken blijkt dat voor de categorie van de auteursrechtelijk beschermde\ncomputerprogramma's, de initiële verwerving van het door een werknemer, bedrijfsleider of een\nonderaannemer ontwikkelde recht, beschouwd moet worden als een door de vennootschap zelf\nontwikkeld computerprogramma, dat door het vermoeden van overdracht van rechten of via overeenkomst\nin aanmerking komt (zie in die zin Parl. St., Kamer, zitting 2016-2017, DOC 54 2235/001, blz. 10 en 11)."
+  },
+  {
+    "num": 7,
+    "vraag": "De intellectuele eigendomsrechten – Op welk moment kan een auteursrechtelijk beschermd computerprogramma worden beschouwd als een intellectueel eigendomsrecht dat in aanmerking komt?",
+    "antwoord": "Auteursrechtelijk beschermde computerprogramma's, met inbegrip van afgeleide werken of\naanpassingen van bestaande computerprogramma's, worden als in aanmerking komende intellectuele\neigendomsrechten beschouwd indien zij voortvloeien uit een onderzoeks- en/of ontwikkelingsproject of –\nprogramma zoals bedoeld in artikel 2753, § 3, WIB 92, inzake de vrijstelling van doorstorting van\nbedrijfsvoorheffing. Die voorwaarde heeft enkel betrekking op de naleving van de definitie inzake O&O en\nbetekent niet dat er effectief een vrijstelling van doorstorting van bedrijfsvoorheffing wordt toegepast.\nEr wordt opgemerkt dat de bedoelde computerprogramma's worden beschouwd als intellectuele\neigendomsrechten die in aanmerking komen indien de vennootschap voor de bedoelde projecten of\nprogramma's over een bindend advies beschikt van de Programmatorische federale Overheidsdienst\nWetenschapsbeleid (Belspo) inzake de vrijstelling van doorstorting van bedrijfsvoorheffing. In de andere\ngevallen wordt de belastingplichtige verzocht om zo'n bindend advies te vragen aan Belspo, met het oog op\nde toepassing van de aftrek voor innovatie-inkomsten (zie in die zin, Parl. St., Kamer, zitting 2016-2017,\nDOC 54 2235/001, blz. 11)."
+  },
+  {
+    "num": 8,
+    "vraag": "De intellectuele eigendomsrechten – Vanaf wanneer kunnen de bedoelde intellectuele eigendomsrechten in aanmerking worden genomen?",
+    "antwoord": "Zoals reeds vermeld in nr. 5 werd het toepassingsgebied van de nieuwe aftrek uitgebreid met\ninzonderheid als doel nieuwe of bijkomende O&O-activiteiten te ondersteunen. In dat verband komen\nenkel de 'nieuwe' intellectuele eigendomsrechten in aanmerking."
+  },
+  {
+    "num": 9,
+    "vraag": "De innovatie-inkomsten – Welke inkomsten worden bedoeld?",
+    "antwoord": "De categorieën van inkomsten die recht kunnen geven op de aftrek voor innovatie-inkomsten zijn: (1) licentievergoedingen, (2) vergoedingen begrepen in de verkoopprijs van goederen of diensten, (3) vergoedingen uit procesinnovatie, (4) schadevergoedingen voor schending van intellectuele eigendomsrechten, en (5) bedragen bij vervreemding van intellectuele eigendomsrechten. Enkel inkomsten die uitsluitend verbonden zijn met een intellectueel eigendomsrecht worden in aanmerking genomen."
+  },
+  {
+    "num": 10,
+    "vraag": "De innovatie-inkomsten – Wat wordt verstaan onder licentievergoedingen?",
+    "antwoord": "Net zoals bij de aftrek voor octrooi-inkomsten worden ook hier de vergoedingen, van welke aard ook,\nbedoeld die worden verkregen voor het gebruik van een intellectueel eigendomsrecht dat in aanmerking\nkomt.\nHet kan daarbij gaan om vaste betalingen, variabele betalingen (bijvoorbeeld een percentage van de omzet,\neen percentage van de winst, …), gemengde betalingen of voorschotten."
+  },
+  {
+    "num": 11,
+    "vraag": "De innovatie-inkomsten – Wat wordt verstaan onder vergoedingen die begrepen zijn in de verkoopprijs van de geproduceerde goederen of de geleverde diensten?",
+    "antwoord": "Net zoals bij de aftrek voor octrooi-inkomsten worden ook de vergoedingen bedoeld die begrepen zijn\nin de verkoopprijs van de geproduceerde goederen of de geleverde diensten.\nHet gaat om vergoedingen die aan de vennootschap verschuldigd zouden zijn voor het belastbare tijdperk\nindien de goederen die door of voor rekening van de vennootschap worden geproduceerd of de diensten\ndie door of voor rekening van de vennootschap worden geleverd, zouden worden geproduceerd of geleverd\ndoor een derde op grond van een licentie die door de vennootschap wordt verleend.\nBijgevolg moet worden vastgesteld welke vergoeding de vennootschap zou hebben ontvangen indien\nzij een licentie op de intellectuele eigendomsrechten, die worden gebruikt voor de productie van de\ngoederen of voor de levering van de diensten aan een onafhankelijke vennootschap, zou hebben verleend.\nDe vennootschap zal dus fictief moeten doen alsof een derde de bedoelde goederen produceert of de\ndiensten levert op grond van de verleende licentie op de intellectuele eigendomsrechten om vervolgens het\nbedrag vast te stellen van de vergoeding die onder normale marktomstandigheden verschuldigd zou zijn\ndoor die fictieve derde."
+  },
+  {
+    "num": 12,
+    "vraag": "De innovatie-inkomsten – Wat wordt verstaan onder vergoedingen die voorvloeien uit procesinnovatie?",
+    "antwoord": "Het gaat om de vergoedingen die aan de vennootschap verschuldigd zouden zijn voor het belastbare\ntijdperk indien het productieproces, dat onlosmakelijk verbonden is met een intellectueel eigendomsrecht\ndat in aanmerking komt en dat door of voor rekening van de vennootschap wordt gevolgd, zou worden\ngevolgd door een derde op grond van een licentie die door de vennootschap wordt verleend.\nZoals uiteengezet in de nrs. 37 en 38, moet ook daarbij de vergoeding worden vastgesteld die de\nvennootschap zou hebben ontvangen indien zij aan een onafhankelijke vennootschap een licentie zou\nhebben verleend om het productieproces te volgen.\nDie categorie van inkomsten werd toegevoegd om procesinnovatie aan te moedigen. Procesinnovatie\nzal immers niet altijd leiden tot een meerprijs voor het product of de dienst, omdat het niet noodzakelijk\neen beschermd product of een beschermde dienst betreft. Daarom zal ook het deel van de marge op de\nverkoop van het product of de levering van de dienst dat overeenstemt met de vergoeding die een derde\naan de vennootschap verschuldigd zou zijn voor het volgen van het beschermde productie- of\nleveringsproces, als in aanmerking komende innovatie-inkomsten worden beschouwd. Dat betreft niet\nenkel de werkwijze van het productieproces maar tevens beschermde producten die gebruikt worden in het\nproductieproces (Parl. St., Kamer, zitting 2016-2017, DOC 54 2235/001, blz. 12)."
+  },
+  {
+    "num": 13,
+    "vraag": "De intellectuele eigendomsrechten waarvoor de vennootschap het voordeel van de aftrek (vrijstelling) voor innovatie-inkomsten wenst te verkrijgen, moeten geheel of gedeeltelijk door de vennootschap zelf zijn ontwikkeld of van derden zijn verworven en moeten worden geboekt op het actief van de balans van de vennootschap in de rubriek 'II. Immateriële vaste activa'.",
+    "antwoord": "Er wordt aan herinnerd dat het KB 18.12.2015 (1), dat het Belgische boekhoudrecht in\novereenstemming heeft gebracht met de Europese Richtlijn 2013/34/EU, het KB/W. Venn heeft gewijzigd,\ninzonderheid wat betreft de boekhoudkundige verwerking van kosten van onderzoek en ontwikkeling.\nDaaruit blijkt dat de kosten van ontwikkeling, in tegenstelling tot de kosten van onderzoek, nog steeds\nkunnen worden geboekt in de rubriek 'II. Immateriële vaste activa' op het actief van de balans van de\njaarrekening. Niettemin verduidelijkt het Verslag aan de Koning bij het KB 18.12.2015 dat de boeking van\nnieuwe kosten van onderzoek onder de immateriële vaste activa toegelaten blijft voor zover die kosten\nonmiddellijk en volledig worden afgeschreven in het jaar dat ze worden geactiveerd. Voor meer toelichting\nbij die materie wordt verwezen naar de circulaire AAFisc Nr. 18/2016 (nr. Ci.701.947) d.d. 15.6.2016 en\nmeer bepaald naar de titel 'II.A.2.KB 18.12.2015' ervan.\n(1) Het KB van 18.12.2015 tot omzetting van Richtlijn 2013/34/EU van   26 juni 2013 van het Europees\nParlement en van de Raad betreffende de jaarlijkse financiële overzichten, geconsolideerde financiële\noverzichten en aanverwante verslagen van bepaalde ondernemingsvormen, tot wijziging van Richtlijn\n2006/43/EG van het Europees Parlement en de Raad en tot intrekking van Richtlijnen 78/660/EEG en\n83/349/EEG van de Raad."
+  },
+  {
+    "num": 14,
+    "vraag": "De innovatie-inkomsten – Wat worden verstaan onder de bedragen verkregen bij de vervreemding van een intellectueel eigendomsrecht?",
+    "antwoord": "De vergoedingen die worden verkregen bij de vervreemding van een intellectueel eigendomsrecht komen in aanmerking voor de aftrek voor innovatie-inkomsten, op voorwaarde dat het recht de aard van vast actief heeft. Om de aftrek te behouden die aan die inkomsten is toegekend, moet de vennootschap de sommen opnieuw investeren in O&O-activiteiten."
+  },
+  {
+    "num": 15,
+    "vraag": "De aftrek voor innovatie-inkomsten is van toepassing zowel op de door de vennootschap geheel of gedeeltelijk zelf ontwikkelde intellectuele eigendomsrechten als op de rechten verworven van al dan niet onafhankelijke derden.",
+    "antwoord": "Er is impliciet vereist dat de verworven intellectuele eigendomsrechten door de vennootschap geheel of\ngedeeltelijk verder werden verbeterd (zie in die zin Parl. St., Kamer, zitting 2016-2017, DOC 54 2235/001,\nblz. 9).\nDie voorwaarde wordt niet meer uitdrukkelijk vermeld (in tegenstelling tot wat voorzien was in het kader\nvan de aftrek voor octrooi-inkomsten) aangezien de Nexus-breuk (zie de nrs. 71 e.v.) het aandeel weergeeft\nvan de door de vennootschap zelf uitgevoerde of aan een niet-verbonden onderneming uitbestede O&O-\nactiviteiten in de totale O&O-activiteiten met betrekking tot een intellectueel eigendomsrecht en zodoende\n\nhet bedrag van de toegekende aftrek wordt beperkt. In dezelfde zin is ook niet meer vereist dat\nvennootschappen, andere dan die bedoeld in artikel 15, §§ 1 tot 6, W. Venn, de ontwikkeling of de\nverbetering moeten realiseren binnen een onderzoekscentrum dat een tak van werkzaamheid vormt. Dat\nin tegenstelling tot wat voorzien was in het kader van de aftrek voor octrooi-inkomsten."
+  },
+  {
+    "num": 16,
+    "vraag": "De netto innovatie-inkomsten – Kunnen de netto-inkomsten globaal worden vastgesteld voor alle intellectuele eigendomsrechten?",
+    "antwoord": "In principe moet de vaststelling van de netto innovatie-inkomsten (zie ook FAQ 15, nr. 49) afzonderlijk\nper intellectueel eigendomsrecht gebeuren.\nOvereenkomstig de afwijking zoals voorzien in artikel 205/4, § 1, tweede lid, WIB 92, kan echter,\nwanneer de vennootschap kan aantonen dat dat vanuit praktisch oogpunt niet of zeer moeilijk uitvoerbaar\nis, worden toegestaan dat de innovatie-inkomsten, die voortvloeien uit intellectuele eigendomsrechten,\nworden vastgesteld hetzij per type product of dienst, hetzij per groep van producten of diensten. Die\nafwijking zou bijvoorbeeld verantwoord kunnen zijn wanneer een product of een dienst gebaseerd is op\neen groot aantal verschillende eigendomsrechten.\nIn dat geval zal de vennootschap het verband moeten aantonen tussen enerzijds de innovatie-inkomsten\nen de kwalificerende en globale uitgaven en anderzijds hetzij het type product of dienst, hetzij de groep van\nproducten of diensten (zie ook de nrs. 108 en 109)."
+  },
+  {
+    "num": 17,
+    "vraag": "De netto innovatie-inkomsten – Hoe gebeurt de aftrek van de kosten van het belastbare tijdperk?",
+    "antwoord": "Artikel 205/1, § 2, 3°, WIB 92, bepaalt wat moet worden begrepen onder 'netto-inkomsten' terwijl\nartikel 205/2, WIB 92, de modaliteiten verduidelijkt voor het vaststellen van de netto-inkomsten voor een\nbelastbaar tijdperk.\nOvereenkomstig artikel 205/1, § 2, 3°, WIB 92, moet, voor het vaststellen van de netto innovatie-\ninkomsten, het brutobedrag van de innovatie-inkomsten worden verminderd met de in kosten opgenomen\nglobale uitgaven, gedaan of gedragen in het belastbare tijdperk en die niet lager mogen zijn dan de kosten\ndie tussen niet-verbonden ondernemingen van toepassing zouden zijn.\nHet begrip 'globale uitgaven' (zie nr. 50) heeft bijgevolg betrekking op de kosten van O&O-activiteiten\ndie uitsluitend betrekking hebben op het intellectueel eigendomsrecht, gedragen door de vennootschap\n\nzelf of door een al dan niet verbonden onderaannemer, met inbegrip van de kosten voor het verwerven van\nhet intellectueel eigendomsrecht verworven van derden (zie in dat verband ook nr. 60). Naast de eenmalige\nuitgave voor de verwerving van de volle eigendom, mede-eigendom of vruchtgebruik van een intellectueel\neigendomsrecht, worden ook weerkerende uitgaven zoals royalty's of licentievergoedingen als uitgaven\nvoor de verwerving van een intellectueel eigendomsrecht beschouwd (Parl. St., Kamer, zitting 2016-2017,\nDOC 54 2235/001, blz. 14).\nEnkel de kosten die rechtstreeks betrekking hebben op het intellectueel eigendomsrecht worden in\naanmerking genomen, met uitsluiting dus van interesten, kosten verbonden aan terreinen en gebouwen en\nelke andere kost die niet kan worden toegerekend aan de O&O-activiteiten.\nIn dat kader verduidelijkt de Memorie van Toelichting (Parl. St., Kamer, zitting 2016-2017, DOC 54\n2235/001, blz. 13): 'Om te bepalen of een kost rechtstreeks betrekking heeft op innovatie-inkomsten zal\nniet zozeer naar de \"aard\" van de kosten gekeken worden, maar wel naar hun eigenlijke aanwending'. Als\nvoorbeeld worden de loonkosten genomen van een onderzoeker die zich wijdt aan de ontwikkeling van een\nintellectuele eigendom. Hoewel de loonkosten volgens hun aard op de kostenrekeningen betreffende\nbezoldigingen, sociale lasten en pensioenen worden geboekt, vormen die kosten O&O-uitgaven die\nrechtstreeks betrekking hebben op een intellectueel eigendomsrecht.\nOnder de loonkosten van een onderzoeker wordt de globale loonkost voor een vennootschap verstaan\ningevolge het werk van de onderzoeker in dienst van die vennootschap. Behalve de kosten die verband\nhouden met de eigenlijke bezoldiging moeten ook inzonderheid de kosten die door de vennootschap\nworden gedragen inzake maaltijdcheques, groepsverzekering, bedrijfswagen, telefoon, multimedia, …. in\naanmerking worden genomen.\nZo moet bijvoorbeeld onder de loonkosten die verbonden zijn met de terbeschikkingstelling van een\nbedrijfswagen alle kosten worden begrepen die voortvloeien uit die terbeschikkingstelling (privé en\nberoepsmatig), namelijk de kosten van afschrijving, onderhoud, brandstof, verzekering, … verminderd met\nde eventuele tussenkomst van de werknemer.\nIn het algemeen moet per intellectueel eigendomsrecht het gedeelte van de loonkosten kunnen worden\nbepaald dat verbonden is aan O&O-activiteiten.\nDe O&O-kosten die niet kunnen worden toegewezen aan een bepaald intellectueel eigendomsrecht,\nmogen niet in mindering worden gebracht van de bruto innovatie-inkomsten die voortvloeien uit dat recht.\nDe Memorie van Toelichting verduidelijkt niettemin dat om het rechtstreeks verband vast te stellen met\neen intellectueel eigendomsrecht, er naar de 'intentie' van die uitgaven moet worden gekeken. De Memorie\nneemt als voorbeeld het geval van een intellectueel eigendomsrecht dat voortvloeit uit een groter O&O-\nproject waarbij pas op het moment van de totstandkoming van de intellectuele eigendom kan worden\nvastgesteld dat bepaalde O&O-uitgaven niet rechtstreeks betrekking hebben op die intellectuele\neigendom. Wanneer niettemin op het moment dat de uitgaven worden gedaan die uitgaven kunnen\nworde"
+  },
+  {
+    "num": 18,
+    "vraag": "De netto innovatie-inkomsten – Hoe gebeurt de aftrek van de historische kosten?",
+    "antwoord": "Er wordt aan herinnerd dat artikel 205/1, § 2, 3°, WIB 92, bepaalt wat moet worden begrepen onder\n'netto-inkomsten' terwijl artikel 205/2, WIB 92, de modaliteiten verduidelijkt voor het vaststellen van de\nnetto-inkomsten voor een belastbaar tijdperk."
+  },
+  {
+    "num": 19,
+    "vraag": "De categorie van 'auteursrechtelijk beschermde computerprogramma's' wijkt af van de overige vier categorieën van intellectuele eigendom in die zin dat de auteursrechten geen aanvraag behoeven, maar dat zij automatisch ontstaan op het moment dat zij door het auteursrecht beschermd worden geacht (Parl. St., Kamer, zitting 2016-2017, DOC 54 2235/001, blz. 10).",
+    "antwoord": "Overeenkomstig artikel XI.295 van het Wetboek van Economisch Recht verkrijgt een\ncomputerprogramma bescherming indien het oorspronkelijk is in die zin, dat het een eigen intellectuele\nschepping van de auteur is. Om te bepalen of het programma voor auteursrechtelijke bescherming in\naanmerking komt, mogen geen andere criteria worden toegepast.\nHet auteursrecht beschermt het computerprogramma in zijn verschillende aspecten: broncode, objectcode,\nesthetische elementen, interface, voorbereidend materiaal, structuur van het programma, …. Een nog niet\nuitgeschreven programma waarvan de architectuur voldoende is ontwikkeld, kan ook reeds beschermd zijn.\nVoor meer verduidelijkingen betreffende de computerprogramma's die beschermd zijn door het\nauteursrecht kan de internetsite van de FOD Economie, KMO, Middenstand en Energie worden\ngeraadpleegd op het adres http://economie.fgov.be, luik 'Intellectuele eigendom' van de rubriek\n'Ondernemingen en zelfstandigen'."
+  },
+  {
+    "num": 20,
+    "vraag": "De beperking van de netto innovatie-inkomsten in functie van de uitgaven – Waaruit bestaat de Nexus-breuk? – Bedoeling",
+    "antwoord": "Artikel 205/3, § 1, WIB 92, bepaalt dat de innovatie-inkomsten die afzonderlijk worden vastgesteld\novereenkomstig artikel 205/2, WIB 92, worden vermenigvuldigd met een breuk waarvan:\n-      de teller gelijk is aan de in het belastbare tijdperk en in vorige belastbare tijdperken gedane\nkwalificerende uitgaven met betrekking tot het intellectueel eigendomsrecht, eventueel verhoogd met\n30 % tot maximum het bedrag van de noemer;\n-      de noemer gelijk is aan de in het belastbare tijdperk en in vorige belastbare tijdperken gedane globale\nuitgaven met betrekking tot het intellectueel eigendomsrecht."
+  },
+  {
+    "num": 21,
+    "vraag": "De beperking van de netto innovatie-inkomsten in functie van de uitgaven – Waaruit bestaat de Nexus-breuk? – Overgangsstelsel",
+    "antwoord": "Artikel 205/3, § 1, tweede lid, WIB 92, voorziet een overgangsstelsel voor het bepalen van de Nexus-\nbreuk voor de aanslagjaren 2019 en vorige.\nDat overgangsstelsel is voorwaardelijk en is alleen van toepassing voor zover de vennootschap\ngedurende drie opeenvolgende belastbare tijdperken geen bewijsstukken ter beschikking van de\nadministratie kon houden, zoals dat voorzien is in artikel 205/4, § 1, WIB 92.\nUit de Memorie van Toelichting (zie in die zin Parl. St., Kamer, zitting 2016-2017, DOC 54 2235/001,\nblz. 21) blijkt dat het overgangsstelsel die gevallen beoogt waarbij de belastingplichtige, voor de globale\nuitgaven die zijn gedaan voor de ontwikkeling van een intellectuele eigendom, de inlichtingen die\nnoodzakelijk zijn voor het berekenen van de Nexus-breuk overeenkomstig de vereisten zoals opgenomen in\nartikel 205/4, § 1, WIB 92, nog niet kan verstrekken.\nM.a.w., door die overgangsperiode wordt aan deze belastingplichtige de nodige tijd gegeven om zich aan te\npassen aan de bepalingen van artikel 205/4, § 1, WIB 92, inzake het bijhouden van bewijsstukken die\nnoodzakelijk zijn in het kader van de berekening van de bedoelde breuk.\nHet is nuttig eraan te herinneren dat het stelsel van de aftrek voor innovatie-inkomsten op verschillende\ngebieden werd uitgebreid met het oog op het bevorderen van nieuwe innovatie (zie nr. 5).\nHet overgangsstelsel beoogt niet de gevallen waarbij de belastingplichtige niet beschikt over de\nbewijsstukken met betrekking tot de uitgaven waarmee rekening werd gehouden bij de berekening van de\nbreuk (bijvoorbeeld voor oude octrooien waarvoor de belastingplichtige niet meer beschikt over\nbewijsstukken voor de bedoelde uitgaven en waarvoor geen enkele uitgave meer is gedaan)."
+  },
+  {
+    "num": 22,
+    "vraag": "De beperking van de netto innovatie-inkomsten in functie van de uitgaven – Waaruit bestaat de Nexus-breuk? – Wettelijke afwijking",
+    "antwoord": "De wettekst voorziet dat het mogelijk is dat de Nexus-breuk wegens uitzonderlijke omstandigheden niet representatief is voor de werkelijke situatie. Overeenkomstig artikel 205/3, § 2, WIB 92, kan de vennootschap de breuk bepalen op basis van het werkelijk aandeel van de kwalificerende uitgaven ten opzichte van de globale uitgaven. De toepassing van die afwijkende bepaling wordt uitgevoerd op basis van een voorafgaande beslissing."
+  },
+  {
+    "num": 23,
+    "vraag": "De aftrek voor innovatie-inkomsten – Waaruit bestaat het fiscaal voordeel dat verbonden is aan de innovatie-inkomsten? – Aftrek",
+    "antwoord": "De aftrek voor innovatie-inkomsten is gelijk aan 85% van de netto-inkomsten zoals bepaald overeenkomstig artikel 205/2 en 205/3, WIB 92. De aftrek voor innovatie-inkomsten gebeurt na de aftrek voor definitief belaste inkomsten (DBI) en de aftrek voor risicokapitaal (VRI). Indien het belastbare tijdperk geen of onvoldoende winst oplevert, wordt de niet-verleende aftrek overgedragen naar de volgende belastbare tijdperken."
+  },
+  {
+    "num": 24,
+    "vraag": "De aftrek voor innovatie-inkomsten – Waaruit bestaat het fiscaal voordeel dat verbonden is met die innovatie-inkomsten? – Vrijstelling – Tijdelijke vrijstelling",
+    "antwoord": "Door de inlassing van artikel 194quinquies, WIB 92, is het voortaan reeds mogelijk om het fiscaal\nvoordeel voor de innovatie-inkomsten te verkrijgen vanaf het belastbare tijdperk waarin een aanvraag voor\nhet bekomen van een in aanmerking komend intellectueel eigendomsrecht wordt ingediend.\nOmdat het onmogelijk is om op het ogenblik dat die aanvraag wordt ingediend te weten of het intellectueel\neigendomsrecht uiteindelijk zal worden verleend, wordt een tijdelijke vrijstelling toegekend in de periode\ndat de aanvraag lopende is. Van zodra het intellectueel eigendomsrecht effectief wordt toegekend, wordt\nde tijdelijke vrijstelling definitief."
+  },
+  {
+    "num": 25,
+    "vraag": "De aftrek voor innovatie-inkomsten – Waaruit bestaat het fiscaal voordeel dat verbonden is aan de innovatie-inkomsten? – Vrijstelling – Definitieve vrijstelling",
+    "antwoord": "De tijdelijke vrijstelling met betrekking tot een intellectueel eigendomsrecht wordt definitief door een\nverhoging van de begintoestand van de belastbare reserves, vanaf het aanslagjaar dat verband houdt met\nhet belastbare tijdperk waarin dat intellectueel eigendomsrecht is verleend.\nDe innovatie-inkomsten die betrekking hebben op dat recht verkrijgen de aftrek voor innovatie-inkomsten\nvanaf het aanslagjaar waarvan sprake is in het voorgaande lid, onder de voorwaarden zoals bedoeld in de\nartikelen 205/1 tot 205/4, WIB 92.\nWanneer de vennootschap voor een bepaald aanslagjaar nog over niet verleende vrijstellingen met\nbetrekking tot een bepaald intellectueel eigendomsrecht beschikt ingevolge de beperking van artikel\n194quinquies, § 1, tweede lid, WIB 92, met betrekking tot de overblijvende winst, kan ze het bedrag ervan\ndefinitief vrijstellen, maar altijd binnen de voormelde beperking. Ingeval een belastbaar tijdperk geen of\nonvoldoende winst oplevert om dat bedrag volledig vrij te stellen, wordt het saldo van de nog niet\nverleende vrijstellingen achtereenvolgens overgedragen op de winst van de volgende belastbare\ntijdperken, waarbij er steeds rekening mee moet worden gehouden dat, per belastbaar tijdperk, de\nverleende vrijstelling nooit meer mag bedragen dan het bedrag van de winst die overblijft na de aftrek van\nde DBI en de VRI.\nDe aandacht wordt er op gevestigd dat de grenzen ingesteld door artikel 194quinquies, § 1, tweede\nlid, en § 2, tweede lid, WIB 92, met betrekking tot de winst van het belastbare tijdperk zoals die overblijft\nvóór de toepassing van de artikelen 205/1 tot 205/4, WIB 92, en vóór de aanleg van de vrijgestelde\nreserve of vaststelling van de definitieve vrijstelling, op een globale manier moeten worden beoordeeld\n\nvoor het geheel van de intellectuele eigendomsrechten waarvoor een vrijgestelde reserve en/of een\ndefinitieve vrijstelling (niet verleende vrijstellingen) worden geboekt.\nWanneer de vennootschap voor een bepaald intellectueel eigendomsrecht in aanmerking komt voor\nde aftrek voor innovatie-inkomsten zoals bedoeld in artikel 205/1, WIB 92, en voor hetzelfde recht of voor\neen andere recht, voor de vrijstelling voor innovatie-inkomsten zoals bedoeld in artikel 194quinquies, WIB\n92, zal die laatste bij voorrang worden toegepast (zie ook nr. 101).\nDe voorheen vrijgestelde innovatie-inkomsten met betrekking tot een intellectueel eigendomsrecht\nworden beschouwd als winst van het belastbare tijdperk waarin de aanvraag voor dat intellectueel\neigendomsrecht niet langer lopende is en het intellectueel eigendomsrecht niet werd verleend.\nDe Memorie van Toelichting verduidelijkt: 'De term \"lopende\" is specifiek gekozen om in enig belastbaar\ntijdperk waarin blijkt dat de vrijgestelde reserve onterecht nog niet in de winst is opgenomen, deze te\nkunnen belasten, ongeacht de termijn die reeds verstreken is sinds de afwijzing van de aanvraag'. (Parl. St.,\nKamer, zitting 2016-2017, DOC 54 2235/001, blz. 7).\nIn dat geval zullen overeenkomstig artikel 416, eerste lid, WIB 92, nalatigheidsinteresten verschuldigd\nzijn vanaf 1 januari van het jaar waarnaar het aanslagjaar wordt genoemd waarvoor de vrijstelling werd\ntoegestaan."
+  },
+  {
+    "num": 26,
+    "vraag": "Welke formaliteiten moeten worden vervuld? – Uitgebreide documentatieverplichting",
+    "antwoord": "Overeenkomstig artikel 205/4, § 1, WIB 92, is de belastingplichtige onderworpen aan een uitgebreide\ndocumentatieverplichting die per intellectueel eigendomsrecht de controle mogelijk moet maken van het\nbedrag van de netto innovatie-inkomsten en van de breuk waarmee dat bedrag wordt vermenigvuldigd.\nIn dat verband verduidelijkt de Memorie van Toelichting (Parl. St., Kamer, zitting 2016-2017, DOC 54\n2235/001, blz. 22-23) dat de vennootschap 'de bewijsstukken ter beschikking van de administratie zal\nmoeten houden die de vaststelling mogelijk maken van:\n-      de werkelijke waarde van de intellectuele eigendomsrechten die de vennootschap van een verbonden\nonderneming heeft verworven en waaruit het in aanmerking komend intellectueel eigendomsrecht is\nontstaan. De vennootschap moet m.a.w. aantonen dat de prijs van aankoop of de vergoedingen in de\nvorm van royalty's of licenties overeenstemmen met deze die tussen onafhankelijke ondernemingen\novereen zouden zijn gekomen;\n-      het bedrag aan innovatie-inkomsten dat uitsluitend betrekking heeft op het in aanmerking komend\nintellectueel eigendomsrecht;\n-      het bedrag aan in mindering van deze innovatie-inkomsten te brengen kosten. De vennootschap zal niet\nenkel de kosten van dat belastbare tijdperk moeten aantonen, maar indien van toepassing, eveneens\ndeze die in vorige belastbare tijdperken zijn gedaan of gedragen en die van de innovatie-inkomsten\nworden afgetrokken;\n-      de kwalificerende en globale uitgaven die rechtstreeks betrekking hebben op het in aanmerking komend\nintellectueel eigendomsrecht. Ook hier moeten niet enkel de uitgaven van dat belastbaar tijdperk, maar\ntevens die van vorige belastbare tijdperken worden bewezen, teneinde de juistheid van de breuk\nwaarmee de netto innovatie-inkomsten worden vermenigvuldigd te kunnen vaststellen.\n\nVooral wanneer een vennootschap over meerdere intellectuele eigendomsrechten beschikt waarvoor de\ninnovatie-inkomsten afzonderlijk worden bepaald, wordt het leggen van het verband tussen de innovatie-\ninkomsten en kwalificerende en globale uitgaven enerzijds en het intellectueel eigendomsrecht anderzijds\nessentieel. Een verkeerde toewijzing van inkomsten en/of uitgaven zal in dat geval immers leiden tot een\nverkeerde weergave van het aandeel zelf uitgevoerde O&O-activiteiten per intellectueel eigendomsrecht\nen bijgevolg tot een bedrag aan aftrek voor innovatie-inkomsten dat niet in overeenstemming is met de\ndoelstellingen van deze fiscale gunstmaatregel.\nWanneer de vennootschap kan aantonen dat de vaststelling van de innovatie-inkomsten per intellectueel\neigendomsrecht vanuit praktisch oogpunt echter niet uitvoerbaar is, mag zij de innovatie-inkomsten\nvaststellen, hetzij per type product of dienst, hetzij per groep van producten of diensten, die voortvloeien\nuit intellectuele eigendomsrechten' (zie ook nr. 55)."
+  },
+  {
+    "num": 27,
+    "vraag": "Wat zijn de te vervullen formaliteiten? – Opgave 275 INNO",
+    "antwoord": "Om de vrijstelling voor innovatie-inkomsten en/of de aftrek voor innovatie-inkomsten te kunnen\nverkrijgen, moet de belastingplichtige bij  zijn aangifte in de VenB of de BNI/ven., naargelang het geval, een\nopgave 275 INNO voegen (onderdeel 275 INNO van de elektronische aangifte BIZTAX of model beschikbaar\nop het volgende adres: https://financien.belgium.be en kies 'formulieren').\nWat de vrijstelling voor innovatie-inkomsten betreft, moet de opgave 275 INNO worden bijgevoegd\nvanaf het aanslagjaar dat verbonden is aan het belastbare tijdperk waarin de aanvraag voor een\nintellectueel eigendomsrecht is gebeurd.\nWat de aftrek voor innovatie-inkomsten betreft, moet de opgave 275 INNO worden bijgevoegd voor\nelk aanslagjaar waarvoor:\n-      ofwel, de aftrek voor innovatie-inkomsten wordt toegepast;\n-      ofwel, de termijn van de in een vorig belastbaar tijdperk gekozen methode van lineaire spreiding zoals\nbedoeld in artikel 205/2, § 2, derde lid, WIB 92, nog niet is komen te vervallen, tenzij de aftrek voor\ninnovatie-inkomsten met betrekking tot dat intellectueel eigendomsrecht niet langer wordt toegepast;\n-      ofwel, de in artikel 205/4, § 5, WIB 92, bedoelde herbeleggingstermijn als gevolg van de vervreemding\nvan een intellectueel eigendomsrecht in een vorig belastbaar tijdperk nog niet is komen te vervallen."
+  },
+  {
+    "num": 28,
+    "vraag": "Wanneer treedt de aftrek voor innovatie-inkomsten in werking?",
+    "antwoord": "Artikel 16, W 9.2.2017, bepaalt: 'Deze wet heeft uitwerking met ingang van 1 juli 2016'.\nBijgevolg is die wet, rekening houdend met de datum van publicatie ervan, van toepassing vanaf\n02.03.2017 op de innovatie-inkomsten zoals bedoeld in artikel 205/1, § 2, 2°, WIB 92, die vanaf\n01.07.2016 worden verkregen."
+  },
+  {
+    "num": 29,
+    "vraag": "Overgangsregime voor de aftrek voor octrooi-inkomsten – Bestaat er een samenloop tussen de aftrek voor innovatie-inkomsten en de aftrek voor octrooi-inkomsten?",
+    "antwoord": "De W 03.08.2016 heeft de aftrek voor octrooi-inkomsten opgeheven maar ze heeft evenwel een\novergangsregime voorzien die opgenomen is in artikel 543, WIB 92.\n\nDie bepaling voorziet het behoud van het bestaande stelsel voor de octrooi-inkomsten die tot en met\n30.06.2021 worden ontvangen uit in aanmerking komende octrooien waarvan de aanvragen werden\ningediend vóór 01.07.2016 of, in het geval van verworven octrooien of licentierechten waarvan de\ngebrevetteerde producten of werkwijzen verbeterd zijn, die vóór 01.07.2016 werden verworven en\nwaarvoor de aftrek voor innovatie-inkomsten nog niet werd toegepast. Voor meer details wordt verwezen\nnaar de circulaire AAFisc Nr. 41/2016 (nr. Ci.707.658) d.d. 02.12.2016.\nDe aandacht wordt er op gevestigd dat, overeenkomstig artikel 205/4, § 4, WIB 92, de vennootschap,\ndie voor een in aanmerking komend octrooi, opteert voor de toepassing van de aftrek voor octrooi-\ninkomsten, geen gebruik kan maken van de nieuwe aftrek voor innovatie-inkomsten met betrekking tot de\ninkomsten uit dat octrooi, voor alle belastbare tijdperken die afsluiten vóór 01.07.2021. De keuze voor het\novergangsregime is m.a.w. onherroepelijk (Parl. St., Kamer, zitting 2016-2017, DOC 54 2235/001, blz. 24).\nInzonderheid uit wat voorafgaat en meer bepaald uit de inwerkingtreding van de bepalingen van de W\n03.08.2016 en de W 09.02.2017 volgt:\n-      met betrekking tot de vóór 01.07.2016 ontvangen inkomsten uit octrooien zoals bedoeld in het oude\nartikel 2052, WIB 92, kan enkel gebruik worden gemaakt van de aftrek voor octrooi-inkomsten;\n-      met betrekking tot de vanaf 01.07.2016 ontvangen inkomsten uit octrooien zoals bedoeld in het oude\nartikel 2052, WIB 92, kan de belastingplichtige kiezen tussen de aftrek voor octrooi-inkomsten en de\naftrek voor innovatie-inkomsten. De door de belastingplichtige gemaakte keuze is echter onherroepelijk.\nDe keuze voor de aftrek voor octrooi-inkomsten moet door de belastingplichtige worden gemaakt de\neerste keer dat hij gebruik kan maken van die aftrek voor octrooi-inkomsten overeenkomstig artikel 543,\nWIB 92. In dat geval moet de belastingplichtige het bedrag dat daadwerkelijk aftrekbaar is in zijn aangifte\nvermelden in de rubriek 'Aftrek voor octrooi-inkomsten' van het vak 'Uiteenzetting van de winst' (regel\n1434) en moet hij het vakje op de regel 1865 van het vak 'Aftrek voor octrooi-inkomsten – Informatie met\nbetrekking tot het overgangsregime' aanvinken en bij zijn aangifte de opgave 275P ('Aftrek voor octrooi-\ninkomsten') voegen.\nDe keuze voor de aftrek voor innovatie-inkomsten moet worden gemaakt voor het aanslagjaar dat\nverbonden is aan het belastbare tijdperk waarin het octrooi voor de eerste keer een inkomen oplevert\n(bruto innovatie-inkomsten). De belastingplichtige is er in dat geval toe gehouden bij zijn aangifte de\nopgave 275 INNO te voegen.\nDe gelijktijdige toepassing van de aftrek voor octrooi-inkomsten en de aftrek voor innovatie-\ninkomsten met betrekking tot eenzelfde octrooi is in principe uitgesloten. Aangezien de toepassing van de\naftrek voor octrooi-inkomsten slechts toegestaan is tot en met 30.06.2016, eventueel verlengd tot en met\n30.06.2021 (toepassing van het overgangsregime van artikel 543, WIB 92), kan het voorvallen dat in de\nbelastbare tijdperken waarin die data vallen, met betrekking tot hetzelfde octrooi zowel de aftrek voor\noctrooi-inkomsten als die voor innovatie-inkomsten wordt toegepast. Indien dat gebeurt, zullen enkel de\ninnovatie-inkomsten met betrekking tot het deel van het belastbare tijdperk waarin voor dat octrooi de\naftrek voor octrooi-inkomsten niet werd toegepast, voor de aftrek voor innovatie-inkomsten in aanmerking\nworden genomen (zie artikel 205/2, § 1, 1ste lid, WIB 92, zoals aangevuld door artikel 6, 1°, W 17.12.2017\nen in die zin Parl. St., Kamer, zitting 2017-2018, DOC 54 2764/001, blz. 9)."
+  },
+  {
+    "num": 30,
+    "vraag": "Bijzonderheden – Wat in geval van fiscaal neutrale herstructureringsverrichtingen?",
+    "antwoord": "De artikelen 46, 212, 229 en 231, WIB 92, werden aangepast zodat, in het geval van de in die artikelen\nbedoelde fiscaal neutrale herstructureringsverrichtingen, de aftrekken voor octrooi-inkomsten en\ninnovatie-inkomsten in beschouwing kunnen worden genomen alsof die verrichtingen niet hadden\nplaatsgevonden.\nIn het kader van de aftrek voor innovatie-inkomsten heeft de fiscale neutraliteit inzonderheid als\ngevolg dat:\n-      de overgedragen vrijstellingen en aftrekken die de overgenomen (gesplitste) vennootschap nog niet\nheeft verkregen wegens geen of onvoldoende winst om die vrijstellingen/aftrekken te kunnen\ntoepassen (zie de nrs. 92, 100, 103 en 104), overgedragen worden naar de overnemende of verkrijgende\nvennootschap;\n-      in het geval van een splitsing, de nog niet verleende vrijstellingen en aftrekken worden toegekend aan\nde vennootschappen die de intellectuele eigendomsrechten hebben verkregen waarop die vrijstellingen\nen aftrekken betrekking hebben;\n-      wanneer de innovatie-inkomsten voor de eerste maal afzonderlijk worden bepaald (zie FAQ 18) in\nvoorkomend geval rekening moet worden gehouden met de historische kosten die door de\novergenomen (gesplitste) vennootschap werden gemaakt vóór de herstructureringsverrichting;\n-      voor het vaststellen van de Nexus-breuk, gelet op het 'evoluerend' karakter ervan, de vóór de\nherstructureringsverrichting gedane uitgaven hun aard behouden (kwalificerende uitgaven of globale\nuitgaven)."
+  },
+  {
+    "num": 31,
+    "vraag": "Bijzonderheden – Kan de aftrek voor innovatie-inkomsten worden gecombineerd met de investeringsaftrek?",
+    "antwoord": "De Memorie van Toelichting (Parl. St., Kamer, zitting 2016-2017, DOC 54 2235/001, blz. 6)\nverduidelijkt dat 'de toepassing van de aftrek voor innovatie-inkomsten geen hinder vormt voor de\ntoepassing van de investeringsaftrek met betrekking tot hetzelfde intellectueel eigendomsrecht. De\ninvesteringsaftrek wordt immers berekend op de aanschaffings- of vervaardigingsprijs van het\nintellectueel eigendomsrecht, terwijl de aftrek voor innovatie-inkomsten een fiscaal voordeel toekent voor\nde netto-inkomsten voortvloeiend uit dit intellectueel eigendomsrecht'.\nInterne ref.: 711.953\nTOP"
+  }
+];
+
+// Bouw de sidebar
+const faqList = document.getElementById('faqList');
+FAQ_DATA.forEach(qa => {
+  const div = document.createElement('div');
+  div.className = 'faq-item';
+  div.innerHTML = `<span class="num">${qa.num}</span><span>${qa.vraag}</span>`;
+  div.onclick = () => {
+    askQuestion(qa.vraag);
+    // Scroll naar top op mobiel
+    document.getElementById('messages').scrollTop = 999999;
+  };
+  faqList.appendChild(div);
+});
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function addMessage(text, type) {
+  const msgs = document.getElementById('messages');
+  // Verwijder welcome scherm
+  const welcome = msgs.querySelector('.welcome');
+  if (welcome) welcome.remove();
+
+  const div = document.createElement('div');
+  div.className = 'message ' + type;
+  const avatar = type === 'user' ? '👤' : '⚖️';
+  div.innerHTML = `
+    <div class="avatar">${avatar}</div>
+    <div class="bubble">${text}</div>
+  `;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function tokenize(text) {
+  return text.toLowerCase()
+    .replace(/[^a-zàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter(w => w.length > 2);
+}
+
+// Stopwoorden NL
+const STOP = new Set(['het','de','een','van','in','op','met','voor','dat','die','wat','wie','hoe','als','bij','aan','ook','naar','uit','door','over','werd','worden','wordt','zijn','was','heeft','hebben','kan','kunnen','moet','moeten','niet','meer','nog','maar','wel','dan','dit','die','dat','ze','hij','hun','haar','zijn','ons','wij','ik','je','men','per','tot','voor','wordt','werd']);
+
+function score(query, qa) {
+  const qTokens = tokenize(query).filter(t => !STOP.has(t));
+  const haystack = tokenize(qa.vraag + ' ' + qa.antwoord);
+  const haystackSet = new Set(haystack);
+
+  let s = 0;
+  // Exacte treffers
+  qTokens.forEach(t => {
+    if (haystackSet.has(t)) s += 3;
+    // Partial match
+    haystack.forEach(h => { if (h.includes(t) || t.includes(h)) s += 1; });
+  });
+  // Bonus: match in vraag (titel)
+  const vraagTokens = new Set(tokenize(qa.vraag));
+  qTokens.forEach(t => { if (vraagTokens.has(t)) s += 5; });
+  return s;
+}
+
+function findAnswers(query) {
+  if (!query.trim()) return [];
+  const scored = FAQ_DATA.map(qa => ({ qa, score: score(query, qa) }))
+    .filter(x => x.score > 0)
+    .sort((a, b) => b.score - a.score);
+  return scored.slice(0, 3).map(x => x.qa);
+}
+
+function formatAnswer(qa) {
+  const antwoord = qa.antwoord
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/\n/g, '<br>');
+  return `<b>FAQ ${qa.num}: ${escHtml(qa.vraag)}</b><br><br><p>${antwoord}</p>
+    <div class="source">📄 Bron: FAQ aftrek innovatie-inkomsten – FOD Financiën, 26.07.2018</div>`;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function sendMessage() {
+  const input = document.getElementById('userInput');
+  const query = input.value.trim();
+  if (!query) return;
+  input.value = '';
+  input.style.height = 'auto';
+  document.getElementById('suggestions').style.display = 'none';
+  askQuestion(query);
+}
+
+function askQuestion(query) {
+  addMessage(escHtml(query), 'user');
+
+  setTimeout(() => {
+    const results = findAnswers(query);
+    if (results.length === 0) {
+      addMessage('Ik kon geen specifiek antwoord vinden op uw vraag. Probeer een andere formulering of klik op een vraag in de zijbalk.', 'bot');
+    } else if (results.length === 1) {
+      addMessage(formatAnswer(results[0]), 'bot');
+    } else {
+      // Meerdere resultaten: toon het beste + vermelding van anderen
+      let html = formatAnswer(results[0]);
+      const others = results.slice(1).map(r => `FAQ ${r.num}`).join(', ');
+      html += `<div class="source" style="margin-top:6px">💡 Mogelijk ook relevant: ${others}</div>`;
+      addMessage(html, 'bot');
+    }
+  }, 200);
+}
+</script>
+</body>
+</html>
