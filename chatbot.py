@@ -10,9 +10,9 @@ from pathlib import Path
 import anthropic
 from dotenv import load_dotenv
 
-# Probeer pypdf te importeren voor PDF-ondersteuning
+# Probeer PyMuPDF te importeren voor PDF-ondersteuning
 try:
-    from pypdf import PdfReader
+    import fitz  # PyMuPDF
     PDF_SUPPORT = True
 except ImportError:
     PDF_SUPPORT = False
@@ -54,8 +54,8 @@ def load_documents(docs_dir: Path) -> str:
 
         try:
             if filepath.suffix.lower() == ".pdf":
-                reader = PdfReader(str(filepath))
-                pages = [page.extract_text() or "" for page in reader.pages]
+                doc = fitz.open(str(filepath))
+                pages = [page.get_text() for page in doc]
                 content = "\n".join(pages).strip()
             else:
                 content = filepath.read_text(encoding="utf-8").strip()
