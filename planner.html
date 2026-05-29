@@ -289,6 +289,7 @@
   ];
   const OPEN_HOUR = 9, CLOSE_HOUR = 18, SLOT_MIN = 30;
   const STORE_KEY = 'barber_bookings_v1';
+  const API_BASE = ''; // leeg = zelfde origin als de server
 
   // ---- State ----
   const state = { service: null, barber: null, date: null, time: null };
@@ -342,7 +343,7 @@
   dateInput.max = fmt(maxDate);
   dateInput.onchange = renderSlots;
 
-  function renderSlots() {
+  async function renderSlots() {
     state.time = null;
     $('#next-3').disabled = true;
     state.date = dateInput.value;
@@ -357,12 +358,25 @@
       return;
     }
 
-    // Which slots are taken (same barber OR "any" collision on same barber)
-    const bookings = loadBookings();
-    const takenTimes = bookings
-      .filter(b => b.date === state.date && (state.barber.id === 'any' || b.barberId === 'any' || b.barberId === state.barber.id))
+    // Bezette slots ophalen uit de echte agenda (bron van waarheid).
+    slotsEl.innerHTML = '<div class="slot-empty">Beschikbaarheid laden…</div>';
+    let booked = [];
+    try {
+      const res = await fetch(`${API_BASE}/api/availability?date=${state.date}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Onbekende fout');
+      booked = data.booked || [];
+    } catch (e) {
+      slotsEl.innerHTML = `<div class="slot-empty">⚠️ Kon beschikbaarheid niet laden: ${e.message}. Draait de server?</div>`;
+      return;
+    }
+
+    // Welke tijden zijn bezet (zelfde kapper, of "any"-botsing)
+    const takenTimes = booked
+      .filter(b => state.barber.id === 'any' || b.barberId === 'any' || b.barberId === state.barber.id)
       .map(b => b.time);
 
+    slotsEl.innerHTML = '';
     const now = new Date();
     for (let h = OPEN_HOUR; h < CLOSE_HOUR; h++) {
       for (let m = 0; m < 60; m += SLOT_MIN) {
@@ -421,7 +435,7 @@
   }
 
   // ---- Confirm ----
-  $('#confirm-btn').onclick = () => {
+  $('#confirm-btn').onclick = async () => {
     const name = $('#name').value.trim();
     const phone = $('#phone').value.trim();
     const email = $('#email').value.trim();
@@ -437,24 +451,37 @@
     setErr('email', !emailOk); if (!emailOk) valid = false;
     if (!valid) return;
 
-    // Re-check slot still free (avoid double booking)
-    const bookings = loadBookings();
-    const clash = bookings.some(b => b.date === state.date && b.time === state.time &&
-      (state.barber.id === 'any' || b.barberId === 'any' || b.barberId === state.barber.id));
-    if (clash) {
-      alert('Dit tijdslot is helaas net bezet geraakt. Kies a.u.b. een ander tijdstip.');
-      goTo(3); renderSlots(); return;
-    }
-
     const booking = {
-      id: Date.now(),
       serviceId: state.service.id, service: state.service.name,
       barberId: state.barber.id, barber: state.barber.name,
       date: state.date, time: state.time,
       dur: state.service.dur, price: state.service.price,
       name, phone, email, notes,
     };
-    bookings.push(booking);
+
+    // Naar de centrale agenda van de kapper sturen.
+    const btn = $('#confirm-btn');
+    btn.disabled = true; btn.textContent = 'Bezig…';
+    let result;
+    try {
+      const res = await fetch(`${API_BASE}/api/book`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(booking),
+      });
+      result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Onbekende fout');
+    } catch (e) {
+      btn.disabled = false; btn.textContent = 'Afspraak bevestigen ✓';
+      alert('Afspraak kon niet worden geboekt: ' + e.message);
+      if ((e.message || '').toLowerCase().includes('bezet')) { goTo(3); renderSlots(); }
+      return;
+    }
+    btn.disabled = false; btn.textContent = 'Afspraak bevestigen ✓';
+
+    // Lokaal bijhouden zodat de klant 't terugziet onder "Mijn afspraken".
+    const bookings = loadBookings();
+    bookings.push({ ...booking, id: Date.now(), eventId: result.eventId });
     saveBookings(bookings);
 
     const d = new Date(state.date + 'T00:00:00');
@@ -499,11 +526,20 @@
           <span class="what">${b.service} • ${b.barber} • €${b.price}</span>
         </div>
         <button data-id="${b.id}">Annuleren</button>`;
-      el.querySelector('button').onclick = () => {
-        if (confirm('Weet je zeker dat je deze afspraak wilt annuleren?')) {
-          saveBookings(loadBookings().filter(x => x.id !== b.id));
-          renderBookings();
+      el.querySelector('button').onclick = async () => {
+        if (!confirm('Weet je zeker dat je deze afspraak wilt annuleren?')) return;
+        if (b.eventId) {
+          try {
+            const res = await fetch(`${API_BASE}/api/booking/${b.eventId}`, { method: 'DELETE' });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Onbekende fout');
+          } catch (e) {
+            alert('Kon afspraak niet annuleren in de agenda: ' + e.message);
+            return;
+          }
         }
+        saveBookings(loadBookings().filter(x => x.id !== b.id));
+        renderBookings();
       };
       list.appendChild(el);
     });
