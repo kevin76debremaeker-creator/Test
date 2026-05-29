@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kapperszaak – Afspraak Plannen</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f7f5f2;
+    --ink: #1f2421;
+    --gold: #c8a45c;
+    --gold-dark: #a8863f;
+    --dark: #232b2b;
+    --muted: #8a8f8c;
+    --line: #e6e2db;
+    --ok: #2f9e6b;
+  }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: var(--bg); color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #232b2b, #3a4744);
+    color: #fff; padding: 20px 24px;
+    display: flex; align-items: center; gap: 14px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+  }
+  header .logo {
+    font-size: 30px; width: 52px; height: 52px;
+    background: var(--gold); color: var(--dark);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  header h1 { font-size: 20px; font-weight: 700; letter-spacing: 0.5px; }
+  header p { font-size: 12px; opacity: 0.75; margin-top: 2px; }
+
+  .wrap { max-width: 880px; margin: 0 auto; padding: 24px 16px 60px; }
+
+  /* Stepper */
+  .stepper {
+    display: flex; justify-content: space-between;
+    margin-bottom: 28px; position: relative;
+  }
+  .stepper::before {
+    content: ''; position: absolute; top: 18px; left: 8%; right: 8%;
+    height: 2px; background: var(--line); z-index: 0;
+  }
+  .step {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    z-index: 1; flex: 1;
+  }
+  .step .dot {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: #fff; border: 2px solid var(--line);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; color: var(--muted); transition: all 0.2s;
+  }
+  .step.active .dot { border-color: var(--gold); background: var(--gold); color: var(--dark); }
+  .step.done .dot { border-color: var(--ok); background: var(--ok); color: #fff; }
+  .step .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .step.active .label, .step.done .label { color: var(--ink); font-weight: 600; }
+
+  /* Panels */
+  .panel { display: none; animation: fade 0.25s ease; }
+  .panel.show { display: block; }
+  @keyframes fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  .panel h2 { font-size: 18px; margin-bottom: 4px; }
+  .panel .sub { font-size: 13px; color: var(--muted); margin-bottom: 18px; }
+
+  /* Cards grid */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+  .card {
+    background: #fff; border: 2px solid var(--line); border-radius: 12px;
+    padding: 16px; cursor: pointer; transition: all 0.15s;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .card:hover { border-color: var(--gold); transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.06); }
+  .card.selected { border-color: var(--gold); background: #fffaf0; }
+  .card .ico { font-size: 26px; }
+  .card .name { font-weight: 600; font-size: 15px; }
+  .card .meta { font-size: 12px; color: var(--muted); }
+  .card .price { font-weight: 700; color: var(--gold-dark); font-size: 15px; }
+
+  /* Date + time */
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  input, select {
+    width: 100%; padding: 11px 12px; font-size: 14px;
+    border: 1px solid var(--line); border-radius: 8px; background: #fff;
+    font-family: inherit; color: var(--ink);
+  }
+  input:focus, select:focus { outline: none; border-color: var(--gold); }
+
+  .slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; }
+  .slot {
+    padding: 10px; text-align: center; font-size: 14px; font-weight: 600;
+    border: 1px solid var(--line); border-radius: 8px; background: #fff;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .slot:hover:not(.taken) { border-color: var(--gold); }
+  .slot.selected { background: var(--gold); border-color: var(--gold); color: var(--dark); }
+  .slot.taken { background: #f1efeb; color: #c4c0b9; cursor: not-allowed; text-decoration: line-through; }
+  .slot-empty { font-size: 13px; color: var(--muted); padding: 12px 0; }
+
+  /* Summary */
+  .summary {
+    background: #fff; border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px; margin-bottom: 18px;
+  }
+  .summary .row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; border-bottom: 1px dashed var(--line); }
+  .summary .row:last-child { border-bottom: none; font-weight: 700; }
+  .summary .row span:first-child { color: var(--muted); }
+
+  /* Buttons */
+  .actions { display: flex; justify-content: space-between; margin-top: 24px; gap: 12px; }
+  button.btn {
+    padding: 12px 26px; font-size: 14px; font-weight: 600; border-radius: 8px;
+    border: none; cursor: pointer; font-family: inherit; transition: all 0.15s;
+  }
+  .btn-primary { background: var(--gold); color: var(--dark); }
+  .btn-primary:hover { background: var(--gold-dark); color: #fff; }
+  .btn-primary:disabled { background: var(--line); color: var(--muted); cursor: not-allowed; }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+  .btn-ghost:hover { color: var(--ink); border-color: var(--muted); }
+
+  /* Confirmation */
+  .confirm { text-align: center; padding: 30px 16px; }
+  .confirm .check {
+    width: 76px; height: 76px; border-radius: 50%; background: var(--ok); color: #fff;
+    font-size: 40px; display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 18px;
+  }
+  .confirm h2 { font-size: 22px; margin-bottom: 8px; }
+  .confirm p { color: var(--muted); margin-bottom: 6px; }
+
+  /* Bookings list */
+  .bookings { margin-top: 40px; }
+  .bookings h3 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 12px; }
+  .booking-item {
+    background: #fff; border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px 14px; display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 8px; font-size: 14px;
+  }
+  .booking-item .info { display: flex; flex-direction: column; gap: 2px; }
+  .booking-item .when { font-weight: 600; }
+  .booking-item .what { font-size: 12px; color: var(--muted); }
+  .booking-item button {
+    background: none; border: none; color: #c0392b; cursor: pointer; font-size: 13px;
+  }
+  .empty-note { font-size: 13px; color: var(--muted); }
+
+  .err { color: #c0392b; font-size: 12px; margin-top: 4px; display: none; }
+  .err.show { display: block; }
+
+  @media (max-width: 520px) {
+    .step .label { display: none; }
+    header h1 { font-size: 17px; }
+  }
+</style>
+</head>
+<body>
+  <header>
+    <div class="logo">✂️</div>
+    <div>
+      <h1>Barber &amp; Co.</h1>
+      <p>Plan online jouw afspraak — snel &amp; eenvoudig</p>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <!-- Stepper -->
+    <div class="stepper" id="stepper">
+      <div class="step active" data-step="1"><div class="dot">1</div><div class="label">Dienst</div></div>
+      <div class="step" data-step="2"><div class="dot">2</div><div class="label">Kapper</div></div>
+      <div class="step" data-step="3"><div class="dot">3</div><div class="label">Datum &amp; tijd</div></div>
+      <div class="step" data-step="4"><div class="dot">4</div><div class="label">Gegevens</div></div>
+    </div>
+
+    <!-- Step 1: Service -->
+    <div class="panel show" id="panel-1">
+      <h2>Kies een dienst</h2>
+      <p class="sub">Selecteer de behandeling die je wilt boeken.</p>
+      <div class="grid" id="services"></div>
+      <div class="actions">
+        <span></span>
+        <button class="btn btn-primary" id="next-1" disabled>Volgende →</button>
+      </div>
+    </div>
+
+    <!-- Step 2: Barber -->
+    <div class="panel" id="panel-2">
+      <h2>Kies je kapper</h2>
+      <p class="sub">Geen voorkeur? Kies "Eerste beschikbare".</p>
+      <div class="grid" id="barbers"></div>
+      <div class="actions">
+        <button class="btn btn-ghost" data-back>← Terug</button>
+        <button class="btn btn-primary" id="next-2" disabled>Volgende →</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Date & time -->
+    <div class="panel" id="panel-3">
+      <h2>Datum &amp; tijd</h2>
+      <p class="sub">Kies een dag en een vrij tijdslot.</p>
+      <div class="field">
+        <label for="date">Datum</label>
+        <input type="date" id="date">
+      </div>
+      <div class="field">
+        <label>Beschikbare tijden</label>
+        <div class="slots" id="slots"><div class="slot-empty">Kies eerst een datum.</div></div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-ghost" data-back>← Terug</button>
+        <button class="btn btn-primary" id="next-3" disabled>Volgende →</button>
+      </div>
+    </div>
+
+    <!-- Step 4: Details -->
+    <div class="panel" id="panel-4">
+      <h2>Jouw gegevens</h2>
+      <p class="sub">We sturen je een bevestiging.</p>
+      <div class="summary" id="summary"></div>
+      <div class="field">
+        <label for="name">Naam *</label>
+        <input type="text" id="name" placeholder="Voor- en achternaam" autocomplete="name">
+        <div class="err" id="err-name">Vul je naam in.</div>
+      </div>
+      <div class="field">
+        <label for="phone">Telefoonnummer *</label>
+        <input type="tel" id="phone" placeholder="06 12 34 56 78" autocomplete="tel">
+        <div class="err" id="err-phone">Vul een geldig telefoonnummer in.</div>
+      </div>
+      <div class="field">
+        <label for="email">E-mailadres</label>
+        <input type="email" id="email" placeholder="naam@voorbeeld.nl" autocomplete="email">
+        <div class="err" id="err-email">Vul een geldig e-mailadres in.</div>
+      </div>
+      <div class="field">
+        <label for="notes">Opmerking (optioneel)</label>
+        <input type="text" id="notes" placeholder="Bijv. specifieke wensen">
+      </div>
+      <div class="actions">
+        <button class="btn btn-ghost" data-back>← Terug</button>
+        <button class="btn btn-primary" id="confirm-btn">Afspraak bevestigen ✓</button>
+      </div>
+    </div>
+
+    <!-- Confirmation -->
+    <div class="panel" id="panel-done">
+      <div class="confirm">
+        <div class="check">✓</div>
+        <h2>Afspraak bevestigd!</h2>
+        <p id="done-msg"></p>
+        <p>Tot snel bij Barber &amp; Co. ✂️</p>
+        <div class="actions" style="justify-content:center; margin-top:24px;">
+          <button class="btn btn-primary" id="restart">Nieuwe afspraak plannen</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Existing bookings -->
+    <div class="bookings" id="bookings-wrap">
+      <h3>Mijn afspraken</h3>
+      <div id="bookings-list"></div>
+    </div>
+  </div>
+
+<script>
+  // ---- Data ----
+  const SERVICES = [
+    { id: 'knip',    ico: '✂️', name: 'Knippen',           dur: 30, price: 25 },
+    { id: 'baard',   ico: '🧔', name: 'Baard trimmen',     dur: 20, price: 18 },
+    { id: 'combo',   ico: '💈', name: 'Knippen + baard',   dur: 45, price: 38 },
+    { id: 'kind',    ico: '🧒', name: 'Kinderknip',        dur: 25, price: 18 },
+    { id: 'scheren', ico: '🪒', name: 'Klassiek scheren',  dur: 30, price: 28 },
+    { id: 'wash',    ico: '💆', name: 'Wassen + styling',  dur: 20, price: 15 },
+  ];
+  const BARBERS = [
+    { id: 'any',   ico: '⭐', name: 'Eerste beschikbare', meta: 'Geen voorkeur' },
+    { id: 'tom',   ico: '👨', name: 'Tom',   meta: 'Fades & classic cuts' },
+    { id: 'sara',  ico: '👩', name: 'Sara',  meta: 'Styling & kleur' },
+    { id: 'youss', ico: '🧔', name: 'Youssef', meta: 'Baard specialist' },
+  ];
+  const OPEN_HOUR = 9, CLOSE_HOUR = 18, SLOT_MIN = 30;
+  const STORE_KEY = 'barber_bookings_v1';
+
+  // ---- State ----
+  const state = { service: null, barber: null, date: null, time: null };
+  let currentStep = 1;
+
+  const $ = (s) => document.querySelector(s);
+  const loadBookings = () => JSON.parse(localStorage.getItem(STORE_KEY) || '[]');
+  const saveBookings = (b) => localStorage.setItem(STORE_KEY, JSON.stringify(b));
+
+  // ---- Render service cards ----
+  const servicesEl = $('#services');
+  SERVICES.forEach(s => {
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.innerHTML = `<div class="ico">${s.ico}</div>
+      <div class="name">${s.name}</div>
+      <div class="meta">${s.dur} min</div>
+      <div class="price">€${s.price}</div>`;
+    el.onclick = () => {
+      state.service = s;
+      [...servicesEl.children].forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      $('#next-1').disabled = false;
+    };
+    servicesEl.appendChild(el);
+  });
+
+  // ---- Render barber cards ----
+  const barbersEl = $('#barbers');
+  BARBERS.forEach(b => {
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.innerHTML = `<div class="ico">${b.ico}</div>
+      <div class="name">${b.name}</div>
+      <div class="meta">${b.meta}</div>`;
+    el.onclick = () => {
+      state.barber = b;
+      [...barbersEl.children].forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      $('#next-2').disabled = false;
+    };
+    barbersEl.appendChild(el);
+  });
+
+  // ---- Date setup ----
+  const dateInput = $('#date');
+  const today = new Date();
+  const fmt = (d) => d.toISOString().split('T')[0];
+  dateInput.min = fmt(today);
+  const maxDate = new Date(today); maxDate.setDate(maxDate.getDate() + 60);
+  dateInput.max = fmt(maxDate);
+  dateInput.onchange = renderSlots;
+
+  function renderSlots() {
+    state.time = null;
+    $('#next-3').disabled = true;
+    state.date = dateInput.value;
+    const slotsEl = $('#slots');
+    slotsEl.innerHTML = '';
+
+    if (!state.date) { slotsEl.innerHTML = '<div class="slot-empty">Kies eerst een datum.</div>'; return; }
+
+    const day = new Date(state.date + 'T00:00:00').getDay();
+    if (day === 0) { // Sunday closed
+      slotsEl.innerHTML = '<div class="slot-empty">Op zondag zijn we gesloten. Kies een andere dag.</div>';
+      return;
+    }
+
+    // Which slots are taken (same barber OR "any" collision on same barber)
+    const bookings = loadBookings();
+    const takenTimes = bookings
+      .filter(b => b.date === state.date && (state.barber.id === 'any' || b.barberId === 'any' || b.barberId === state.barber.id))
+      .map(b => b.time);
+
+    const now = new Date();
+    for (let h = OPEN_HOUR; h < CLOSE_HOUR; h++) {
+      for (let m = 0; m < 60; m += SLOT_MIN) {
+        const t = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+        const slot = document.createElement('div');
+        slot.className = 'slot';
+        slot.textContent = t;
+
+        const slotDateTime = new Date(state.date + 'T' + t + ':00');
+        const isPast = slotDateTime < now;
+        const isTaken = takenTimes.includes(t);
+
+        if (isPast || isTaken) {
+          slot.classList.add('taken');
+        } else {
+          slot.onclick = () => {
+            state.time = t;
+            [...slotsEl.children].forEach(c => c.classList.remove('selected'));
+            slot.classList.add('selected');
+            $('#next-3').disabled = false;
+          };
+        }
+        slotsEl.appendChild(slot);
+      }
+    }
+  }
+
+  // ---- Navigation ----
+  function goTo(step) {
+    currentStep = step;
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('show'));
+    $('#panel-' + step).classList.add('show');
+    // stepper state
+    document.querySelectorAll('.step').forEach(s => {
+      const n = +s.dataset.step;
+      s.classList.toggle('active', n === step);
+      s.classList.toggle('done', n < step);
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  $('#next-1').onclick = () => goTo(2);
+  $('#next-2').onclick = () => goTo(3);
+  $('#next-3').onclick = () => { buildSummary(); goTo(4); };
+  document.querySelectorAll('[data-back]').forEach(b => b.onclick = () => goTo(currentStep - 1));
+
+  function buildSummary() {
+    const d = new Date(state.date + 'T00:00:00');
+    const dateStr = d.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    $('#summary').innerHTML = `
+      <div class="row"><span>Dienst</span><span>${state.service.ico} ${state.service.name}</span></div>
+      <div class="row"><span>Kapper</span><span>${state.barber.name}</span></div>
+      <div class="row"><span>Datum</span><span>${dateStr}</span></div>
+      <div class="row"><span>Tijd</span><span>${state.time} uur (${state.service.dur} min)</span></div>
+      <div class="row"><span>Totaal</span><span>€${state.service.price}</span></div>`;
+  }
+
+  // ---- Confirm ----
+  $('#confirm-btn').onclick = () => {
+    const name = $('#name').value.trim();
+    const phone = $('#phone').value.trim();
+    const email = $('#email').value.trim();
+    const notes = $('#notes').value.trim();
+
+    let valid = true;
+    const setErr = (id, show) => $('#err-' + id).classList.toggle('show', show);
+
+    setErr('name', !name); if (!name) valid = false;
+    const phoneOk = /[0-9]{6,}/.test(phone.replace(/[\s\-+()]/g, ''));
+    setErr('phone', !phoneOk); if (!phoneOk) valid = false;
+    const emailOk = email === '' || /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
+    setErr('email', !emailOk); if (!emailOk) valid = false;
+    if (!valid) return;
+
+    // Re-check slot still free (avoid double booking)
+    const bookings = loadBookings();
+    const clash = bookings.some(b => b.date === state.date && b.time === state.time &&
+      (state.barber.id === 'any' || b.barberId === 'any' || b.barberId === state.barber.id));
+    if (clash) {
+      alert('Dit tijdslot is helaas net bezet geraakt. Kies a.u.b. een ander tijdstip.');
+      goTo(3); renderSlots(); return;
+    }
+
+    const booking = {
+      id: Date.now(),
+      serviceId: state.service.id, service: state.service.name,
+      barberId: state.barber.id, barber: state.barber.name,
+      date: state.date, time: state.time,
+      dur: state.service.dur, price: state.service.price,
+      name, phone, email, notes,
+    };
+    bookings.push(booking);
+    saveBookings(bookings);
+
+    const d = new Date(state.date + 'T00:00:00');
+    const dateStr = d.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
+    $('#done-msg').textContent = `${name}, je ${state.service.name.toLowerCase()} bij ${state.barber.name} staat gepland op ${dateStr} om ${state.time} uur.`;
+
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('show'));
+    $('#panel-done').classList.add('show');
+    document.querySelectorAll('.step').forEach(s => s.classList.add('done'));
+    renderBookings();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // ---- Restart ----
+  $('#restart').onclick = () => {
+    state.service = state.barber = state.date = state.time = null;
+    [...servicesEl.children, ...barbersEl.children].forEach(c => c.classList.remove('selected'));
+    ['name','phone','email','notes'].forEach(id => $('#' + id).value = '');
+    document.querySelectorAll('.err').forEach(e => e.classList.remove('show'));
+    dateInput.value = '';
+    $('#slots').innerHTML = '<div class="slot-empty">Kies eerst een datum.</div>';
+    $('#next-1').disabled = $('#next-2').disabled = $('#next-3').disabled = true;
+    goTo(1);
+  };
+
+  // ---- Bookings list ----
+  function renderBookings() {
+    const list = $('#bookings-list');
+    const bookings = loadBookings().sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+    if (!bookings.length) {
+      list.innerHTML = '<div class="empty-note">Je hebt nog geen afspraken gepland.</div>';
+      return;
+    }
+    list.innerHTML = '';
+    bookings.forEach(b => {
+      const d = new Date(b.date + 'T00:00:00');
+      const dateStr = d.toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' });
+      const el = document.createElement('div');
+      el.className = 'booking-item';
+      el.innerHTML = `<div class="info">
+          <span class="when">${dateStr} — ${b.time} uur</span>
+          <span class="what">${b.service} • ${b.barber} • €${b.price}</span>
+        </div>
+        <button data-id="${b.id}">Annuleren</button>`;
+      el.querySelector('button').onclick = () => {
+        if (confirm('Weet je zeker dat je deze afspraak wilt annuleren?')) {
+          saveBookings(loadBookings().filter(x => x.id !== b.id));
+          renderBookings();
+        }
+      };
+      list.appendChild(el);
+    });
+  }
+
+  renderBookings();
+</script>
+</body>
+</html>
