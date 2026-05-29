@@ -1,261 +1,908 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Hotel Zeezicht — een luxueus boutiquehotel direct aan de Noordzee. Geniet van zeezicht, fijne dining en pure rust." />
-  <title>Hotel Zeezicht · Boutiquehotel aan zee</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Hôtel Zeezicht — een vijfsterren boutiquehotel aan de Noordzee. Filmisch zeezicht, sterrengastronomie, spa en pure rust aan de Belgische kust." />
+<meta name="theme-color" content="#0a2230" />
+<title>Hôtel Zeezicht — Luxe aan de Noordzee</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+/* =====================================================================
+   HÔTEL ZEEZICHT — premium one-page experience
+   Self-contained: alle beelden zijn met SVG/CSS opgebouwd.
+   ===================================================================== */
+:root{
+  --abyss:#061a26; --ocean:#0a2230; --deep:#0e3140; --teal:#1f6f7d;
+  --tide:#3f97a3; --mist:#a9cdd2; --sand:#efe6d6; --sand-2:#e3d3ba;
+  --ivory:#fbf8f2; --ink:#13242c; --muted:#5d6f76;
+  --gold:#c9a24b; --gold-soft:#e6cd8f; --coral:#df9b78; --white:#fff;
+  --serif:"Cormorant Garamond",Georgia,serif;
+  --sans:"Inter",system-ui,-apple-system,sans-serif;
+  --max:1240px; --r:18px;
+  --shadow:0 30px 70px -34px rgba(6,26,38,.6);
+  --ease:cubic-bezier(.22,.61,.36,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);font-weight:300;color:var(--ink);background:var(--ivory);
+  line-height:1.7;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%}
+.container{width:100%;max-width:var(--max);margin:0 auto;padding:0 28px}
+h1,h2,h3,h4{font-family:var(--serif);font-weight:500;line-height:1.08;color:var(--ocean);letter-spacing:.005em}
+h1{font-size:clamp(2.8rem,7vw,5.6rem)}
+h2{font-size:clamp(2rem,4.4vw,3.4rem)}
+h3{font-size:1.5rem}
+.eyebrow{font-family:var(--sans);text-transform:uppercase;letter-spacing:.34em;
+  font-size:.72rem;font-weight:600;color:var(--teal)}
+.eyebrow.light{color:var(--gold-soft)}
+.lead{color:var(--muted);font-size:1.1rem;font-weight:300}
+
+/* ---------- grain overlay for filmic depth ---------- */
+body::before{content:"";position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:.04;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;gap:.55rem;padding:1rem 2rem;border-radius:999px;
+  font-family:var(--sans);font-size:.86rem;font-weight:500;letter-spacing:.04em;cursor:pointer;
+  border:1px solid transparent;transition:transform .4s var(--ease),background .4s var(--ease),color .4s var(--ease),box-shadow .4s var(--ease);
+  position:relative;overflow:hidden}
+.btn:hover{transform:translateY(-3px)}
+.btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold-soft));color:var(--ocean);
+  box-shadow:0 16px 34px -16px rgba(201,162,75,.8)}
+.btn-gold:hover{box-shadow:0 22px 44px -16px rgba(201,162,75,.95)}
+.btn-ghost{background:transparent;color:var(--white);border-color:rgba(255,255,255,.45)}
+.btn-ghost:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.8)}
+.btn-line{background:transparent;color:var(--ocean);border-color:var(--ocean)}
+.btn-line:hover{background:var(--ocean);color:var(--white)}
+.btn-block{width:100%;justify-content:center}
+
+/* ---------- preloader ---------- */
+#loader{position:fixed;inset:0;z-index:10000;background:var(--ocean);display:flex;
+  flex-direction:column;align-items:center;justify-content:center;gap:1.4rem;
+  transition:opacity .8s var(--ease),visibility .8s}
+#loader.done{opacity:0;visibility:hidden}
+.loader-mark{font-family:var(--serif);font-size:2.4rem;color:var(--gold-soft);letter-spacing:.1em;
+  display:flex;align-items:center;gap:.5rem}
+.loader-mark span{font-size:2.8rem}
+.loader-bar{width:180px;height:2px;background:rgba(255,255,255,.18);border-radius:2px;overflow:hidden}
+.loader-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--gold-soft));
+  animation:load 1.6s var(--ease) forwards}
+@keyframes load{to{width:100%}}
+.loader-cap{font-size:.7rem;letter-spacing:.4em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+
+/* ---------- header ---------- */
+.header{position:fixed;top:0;left:0;right:0;z-index:200;padding:1.4rem 0;
+  transition:transform .5s var(--ease),background .5s var(--ease),padding .5s var(--ease),box-shadow .5s var(--ease)}
+.header.scrolled{background:rgba(251,248,242,.92);backdrop-filter:blur(14px);padding:.7rem 0;
+  box-shadow:0 1px 0 rgba(6,26,38,.08)}
+.header.hidden{transform:translateY(-110%)}
+.header-inner{display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:.6rem;font-family:var(--serif);font-size:1.55rem;
+  font-weight:600;color:var(--white);letter-spacing:.02em;transition:color .5s var(--ease)}
+.brand .mk{font-size:1.7rem;color:var(--gold-soft)}
+.scrolled .brand{color:var(--ocean)}
+.nav{display:flex;align-items:center;gap:2rem}
+.nav a.link{font-size:.84rem;letter-spacing:.06em;color:rgba(255,255,255,.92);position:relative;padding:.2rem 0}
+.nav a.link::after{content:"";position:absolute;left:0;bottom:-3px;width:0;height:1px;background:var(--gold);transition:width .4s var(--ease)}
+.nav a.link:hover::after{width:100%}
+.scrolled .nav a.link{color:var(--ink)}
+.burger{display:none;flex-direction:column;gap:6px;background:none;border:0;cursor:pointer;padding:8px;z-index:210}
+.burger span{width:26px;height:2px;background:var(--white);transition:.4s var(--ease)}
+.scrolled .burger span{background:var(--ocean)}
+.burger.open span{background:var(--ocean)}
+.burger.open span:nth-child(1){transform:translateY(8px) rotate(45deg)}
+.burger.open span:nth-child(2){opacity:0}
+.burger.open span:nth-child(3){transform:translateY(-8px) rotate(-45deg)}
+
+/* ---------- hero ---------- */
+.hero{position:relative;height:100vh;min-height:660px;overflow:hidden;color:var(--white);
+  display:flex;align-items:center}
+.scene{position:absolute;inset:0;z-index:0}
+.scene svg{width:100%;height:100%;display:block}
+.sun{transform-box:fill-box;transform-origin:center;animation:sunGlow 6s ease-in-out infinite}
+@keyframes sunGlow{0%,100%{opacity:.92}50%{opacity:1}}
+.cloud{animation:drift linear infinite}
+.cloud.c1{animation-duration:70s}
+.cloud.c2{animation-duration:95s}
+@keyframes drift{from{transform:translateX(-12vw)}to{transform:translateX(112vw)}}
+.gull{animation:flap 3.5s ease-in-out infinite}
+@keyframes flap{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.hero-content{position:relative;z-index:3;max-width:820px;padding-top:60px}
+.hero .eyebrow{margin-bottom:1.3rem;display:inline-block;opacity:0;animation:up .9s var(--ease) .3s forwards}
+.hero h1{color:#fff;margin-bottom:1.5rem;text-shadow:0 4px 30px rgba(6,26,38,.4)}
+.hero h1 .ln{display:block;opacity:0;transform:translateY(40px);animation:up 1s var(--ease) forwards}
+.hero h1 .ln:nth-child(1){animation-delay:.45s}
+.hero h1 .ln:nth-child(2){animation-delay:.62s}
+.hero .em{font-style:italic;color:var(--gold-soft)}
+.hero-sub{font-size:1.22rem;max-width:560px;margin-bottom:2.4rem;color:rgba(255,255,255,.94);
+  opacity:0;animation:up 1s var(--ease) .85s forwards}
+.hero-actions{display:flex;gap:1rem;flex-wrap:wrap;opacity:0;animation:up 1s var(--ease) 1.05s forwards}
+@keyframes up{to{opacity:1;transform:none}}
+.hero-scroll{position:absolute;bottom:170px;left:50%;transform:translateX(-50%);z-index:3;
+  font-size:.66rem;letter-spacing:.4em;text-transform:uppercase;color:rgba(255,255,255,.7);
+  display:flex;flex-direction:column;align-items:center;gap:.7rem;opacity:0;animation:up 1s 1.4s forwards}
+.hero-scroll .ln{width:1px;height:50px;background:linear-gradient(rgba(255,255,255,.7),transparent);
+  animation:lineDrop 2s ease-in-out infinite}
+@keyframes lineDrop{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}50.1%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+/* floating booking bar */
+.bookbar{position:relative;z-index:5;margin:-58px auto 0;max-width:1040px;
+  background:rgba(251,248,242,.97);backdrop-filter:blur(8px);border-radius:var(--r);
+  box-shadow:var(--shadow);padding:1.3rem 1.6rem;display:grid;
+  grid-template-columns:repeat(4,1fr) auto;gap:1.1rem;align-items:end}
+.bookbar .fld{display:flex;flex-direction:column;gap:.35rem;text-align:left}
+.bookbar label{font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.bookbar input,.bookbar select{border:0;border-bottom:1px solid var(--sand-2);background:transparent;
+  padding:.45rem 0;font-family:var(--sans);font-size:.95rem;color:var(--ink);outline:none;transition:border-color .3s}
+.bookbar input:focus,.bookbar select:focus{border-color:var(--gold)}
+.bookbar .btn{padding:.85rem 1.7rem;height:fit-content}
+
+/* ---------- reveal ---------- */
+.reveal{opacity:0;transform:translateY(40px);transition:opacity 1s var(--ease),transform 1s var(--ease)}
+.reveal.in{opacity:1;transform:none}
+.reveal.d1{transition-delay:.12s}.reveal.d2{transition-delay:.24s}.reveal.d3{transition-delay:.36s}
+
+/* ---------- sections ---------- */
+section{position:relative}
+.pad{padding:clamp(5rem,9vw,8.5rem) 0}
+.alt{background:linear-gradient(180deg,var(--ivory),#f3ece0)}
+.head{max-width:680px;margin:0 auto 3.4rem;text-align:center}
+.head .eyebrow{display:block;margin-bottom:1rem}
+.head h2{margin-bottom:1rem}
+
+/* about */
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:4.5rem;align-items:center}
+.about-text p{color:var(--muted);margin:1.1rem 0}
+.about-text h2{margin-bottom:.4rem}
+.sign{font-family:var(--serif);font-style:italic;font-size:1.5rem;color:var(--teal);margin-top:.6rem}
+.stats{display:flex;gap:2.6rem;margin-top:2.4rem;flex-wrap:wrap}
+.stat .num{font-family:var(--serif);font-size:2.8rem;color:var(--gold);line-height:1}
+.stat .lbl{font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-top:.4rem}
+.about-art{position:relative;height:560px;border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow)}
+.about-art .badge{position:absolute;left:-26px;bottom:40px;background:var(--ocean);color:var(--gold-soft);
+  font-family:var(--serif);font-size:1.05rem;padding:1.1rem 1.6rem;border-radius:14px;box-shadow:var(--shadow);
+  display:flex;flex-direction:column;line-height:1.2}
+.about-art .badge b{color:#fff;font-size:1.5rem}
+
+/* rooms */
+.rooms{display:grid;grid-template-columns:repeat(3,1fr);gap:2.2rem}
+.room{background:#fff;border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);
+  display:flex;flex-direction:column;transition:transform .55s var(--ease),box-shadow .55s var(--ease)}
+.room:hover{transform:translateY(-10px);box-shadow:0 44px 80px -36px rgba(6,26,38,.6)}
+.room-art{position:relative;height:260px;overflow:hidden}
+.room-art .scene-svg{position:absolute;inset:0;transition:transform 1.1s var(--ease)}
+.room:hover .room-art .scene-svg{transform:scale(1.08)}
+.room-tag{position:absolute;top:14px;left:14px;z-index:2;background:rgba(251,248,242,.92);
+  color:var(--teal);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;font-weight:600;
+  padding:.4rem .8rem;border-radius:999px}
+.room-body{padding:1.7rem 1.8rem 2rem;display:flex;flex-direction:column;flex:1}
+.room-body h3{margin-bottom:.5rem}
+.room-body p{color:var(--muted);font-size:.95rem}
+.room-meta{display:flex;gap:1.2rem;margin:1.1rem 0 1.3rem;flex-wrap:wrap}
+.room-meta span{font-size:.8rem;color:var(--teal);display:flex;align-items:center;gap:.35rem}
+.room-foot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.room-price b{font-family:var(--serif);font-size:1.7rem;color:var(--ocean)}
+.room-price small{display:block;font-size:.72rem;color:var(--muted);letter-spacing:.06em}
+.room-foot .btn{padding:.7rem 1.3rem;font-size:.78rem}
+
+/* experiences */
+.exp{display:grid;grid-template-columns:repeat(4,1fr);gap:1.6rem}
+.exp-card{background:#fff;border:1px solid var(--sand-2);border-radius:var(--r);padding:2.2rem 1.7rem;
+  transition:transform .5s var(--ease),border-color .5s var(--ease),background .5s var(--ease)}
+.exp-card:hover{transform:translateY(-8px);border-color:var(--gold);background:#fffdf8}
+.exp-card .ic{width:52px;height:52px;margin-bottom:1.1rem;color:var(--teal)}
+.exp-card h3{font-size:1.25rem;margin-bottom:.4rem}
+.exp-card p{color:var(--muted);font-size:.92rem}
+
+/* restaurant (dark, parallax) */
+.dine{position:relative;color:var(--ivory);overflow:hidden;background:var(--abyss)}
+.dine .scene{opacity:.5}
+.dine-grid{position:relative;z-index:2;display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center}
+.dine h2{color:#fff}
+.dine-text p{color:rgba(251,248,242,.82);margin:1rem 0}
+.menu{list-style:none;margin:1.6rem 0 2rem}
+.menu li{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;
+  padding:.85rem 0;border-bottom:1px dashed rgba(255,255,255,.18)}
+.menu .nm{font-family:var(--serif);font-size:1.25rem;color:#fff}
+.menu .ds{font-size:.82rem;color:rgba(255,255,255,.6)}
+.menu .pr{font-family:var(--serif);color:var(--gold-soft);font-size:1.2rem;white-space:nowrap}
+.dine-art{height:480px;border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);position:relative}
+
+/* gallery */
+.gallery{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:200px;gap:14px}
+.g-item{position:relative;overflow:hidden;border-radius:14px;cursor:pointer;box-shadow:var(--shadow)}
+.g-item .scene-svg{position:absolute;inset:0;transition:transform 1s var(--ease)}
+.g-item:hover .scene-svg{transform:scale(1.1)}
+.g-item::after{content:"+";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:var(--serif);font-size:2.4rem;color:#fff;background:rgba(6,26,38,.32);opacity:0;transition:opacity .45s var(--ease)}
+.g-item:hover::after{opacity:1}
+.g-item.tall{grid-row:span 2}.g-item.wide{grid-column:span 2}
+
+/* lightbox */
+.lb{position:fixed;inset:0;z-index:9000;background:rgba(6,18,26,.92);backdrop-filter:blur(6px);
+  display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:opacity .5s var(--ease),visibility .5s}
+.lb.open{opacity:1;visibility:visible}
+.lb-stage{width:min(86vw,1000px);height:min(72vh,640px);border-radius:16px;overflow:hidden;
+  box-shadow:0 50px 120px -40px #000;position:relative;transform:scale(.94);transition:transform .5s var(--ease)}
+.lb.open .lb-stage{transform:scale(1)}
+.lb-cap{position:absolute;left:0;right:0;bottom:0;padding:1.4rem 1.6rem;color:#fff;font-family:var(--serif);
+  font-size:1.4rem;background:linear-gradient(transparent,rgba(6,18,26,.8))}
+.lb-btn{position:absolute;top:50%;transform:translateY(-50%);width:54px;height:54px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.3);background:rgba(0,0,0,.25);color:#fff;font-size:1.3rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:background .3s}
+.lb-btn:hover{background:rgba(255,255,255,.18)}
+.lb-prev{left:3vw}.lb-next{right:3vw}
+.lb-close{position:absolute;top:4vh;right:4vw;width:46px;height:46px;border-radius:50%;border:1px solid rgba(255,255,255,.3);
+  background:transparent;color:#fff;font-size:1.4rem;cursor:pointer}
+
+/* testimonials */
+.quotes{position:relative;max-width:820px;margin:0 auto;text-align:center;min-height:240px}
+.quote{position:absolute;inset:0;opacity:0;transform:translateY(20px);transition:opacity .8s var(--ease),transform .8s var(--ease);pointer-events:none}
+.quote.active{opacity:1;transform:none;position:relative;pointer-events:auto}
+.quote .mark{font-family:var(--serif);font-size:4rem;color:var(--gold);line-height:.6}
+.quote p{font-family:var(--serif);font-size:clamp(1.4rem,2.6vw,2rem);font-style:italic;color:var(--ocean);margin:1rem 0 1.4rem}
+.quote .who{font-size:.8rem;letter-spacing:.16em;text-transform:uppercase;color:var(--teal)}
+.dots{display:flex;gap:.6rem;justify-content:center;margin-top:2rem}
+.dots button{width:9px;height:9px;border-radius:50%;border:0;background:var(--sand-2);cursor:pointer;transition:.3s}
+.dots button.on{background:var(--gold);width:26px;border-radius:6px}
+.stars{color:var(--gold);letter-spacing:.2em;margin-bottom:.6rem}
+
+/* booking */
+.book-wrap{display:grid;grid-template-columns:.9fr 1.1fr;gap:0;border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);background:#fff}
+.book-side{background:var(--ocean);color:var(--ivory);padding:3rem;position:relative;overflow:hidden}
+.book-side .scene{opacity:.5}
+.book-side .inner{position:relative;z-index:2}
+.book-side h2{color:#fff;margin-bottom:1rem}
+.book-side p{color:rgba(255,255,255,.8);font-size:.95rem;margin-bottom:1.6rem}
+.book-side ul{list-style:none}
+.book-side li{display:flex;gap:.7rem;align-items:center;margin-bottom:.8rem;font-size:.92rem;color:rgba(255,255,255,.9)}
+.book-side li .ck{color:var(--gold-soft)}
+.book-form{padding:3rem}
+.book-form .row{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem}
+.book-form label{display:block;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ocean);font-weight:600;margin-bottom:1.1rem}
+.book-form input,.book-form select,.book-form textarea{width:100%;margin-top:.4rem;padding:.8rem .9rem;
+  border:1px solid var(--sand-2);border-radius:10px;font-family:inherit;font-size:.95rem;color:var(--ink);
+  background:var(--ivory);transition:border-color .3s,box-shadow .3s;font-weight:300}
+.book-form input:focus,.book-form select:focus,.book-form textarea:focus{outline:0;border-color:var(--gold);
+  box-shadow:0 0 0 3px rgba(201,162,75,.18)}
+.estimate{display:flex;justify-content:space-between;align-items:center;background:#f3ece0;border-radius:12px;
+  padding:1rem 1.2rem;margin:.4rem 0 1.4rem}
+.estimate .lbl{font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.estimate .val{font-family:var(--serif);font-size:1.8rem;color:var(--ocean)}
+.msg{margin-top:1rem;text-align:center;font-size:.95rem;min-height:1.2rem}
+.msg.ok{color:var(--teal)}.msg.err{color:var(--coral)}
+
+/* footer */
+.footer{background:var(--abyss);color:rgba(251,248,242,.75);padding:5rem 0 2rem;position:relative;overflow:hidden}
+.footer .scene{opacity:.35;height:200px;top:auto;bottom:0}
+.f-grid{position:relative;z-index:2;display:grid;grid-template-columns:1.7fr 1fr 1fr 1.3fr;gap:3rem}
+.f-brand .brand{color:#fff;margin-bottom:1rem}
+.f-brand p{font-size:.93rem;max-width:300px}
+.f-col h4{color:#fff;font-family:var(--sans);font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;margin-bottom:1.2rem}
+.f-col ul{list-style:none}
+.f-col li{margin-bottom:.6rem}
+.f-col a:hover{color:var(--gold-soft)}
+.f-col p{font-size:.93rem;margin-bottom:.6rem}
+.news{display:flex;gap:.5rem;margin-top:1rem}
+.news input{flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);border-radius:999px;
+  padding:.7rem 1.1rem;color:#fff;font-family:inherit;font-size:.88rem;outline:none}
+.news input::placeholder{color:rgba(255,255,255,.5)}
+.news button{border:0;border-radius:999px;padding:.7rem 1.2rem;background:linear-gradient(135deg,var(--gold),var(--gold-soft));
+  color:var(--ocean);font-weight:600;cursor:pointer;font-size:.85rem}
+.f-bottom{position:relative;z-index:2;display:flex;justify-content:space-between;flex-wrap:wrap;gap:.6rem;
+  margin-top:3.4rem;padding-top:1.6rem;border-top:1px solid rgba(255,255,255,.12);
+  font-size:.78rem;color:rgba(251,248,242,.5)}
+
+/* ---------- responsive ---------- */
+@media(max-width:980px){
+  .about-grid,.dine-grid,.book-wrap{grid-template-columns:1fr}
+  .about-art{height:420px}.dine-art{order:-1;height:320px}
+  .rooms,.exp{grid-template-columns:repeat(2,1fr)}
+  .gallery{grid-template-columns:repeat(2,1fr)}
+  .bookbar{grid-template-columns:1fr 1fr;gap:1.3rem}
+  .f-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:640px){
+  .burger{display:flex}
+  .nav{position:fixed;inset:0;background:var(--ivory);flex-direction:column;justify-content:center;
+    gap:1.6rem;transform:translateX(100%);transition:transform .5s var(--ease)}
+  .nav.open{transform:none}
+  .nav a.link{color:var(--ink);font-size:1.3rem;font-family:var(--serif)}
+  .nav .btn{margin-top:.6rem}
+  .rooms,.exp,.gallery,.book-form .row,.bookbar{grid-template-columns:1fr}
+  .bookbar{margin-top:-30px}
+  .f-grid{grid-template-columns:1fr}
+  .hero-scroll{display:none}
+  .stats{gap:1.6rem}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
 </head>
 <body>
-  <!-- Header -->
-  <header class="site-header" id="header">
-    <div class="container header-inner">
-      <a href="#home" class="logo">
-        <span class="logo-mark">≋</span>
-        <span class="logo-text">Hotel&nbsp;Zeezicht</span>
-      </a>
-      <nav class="nav" id="nav">
-        <a href="#kamers">Kamers</a>
-        <a href="#faciliteiten">Faciliteiten</a>
-        <a href="#restaurant">Restaurant</a>
-        <a href="#omgeving">Omgeving</a>
-        <a href="#contact">Contact</a>
-        <a href="#reserveren" class="btn btn-nav">Reserveren</a>
-      </nav>
-      <button class="nav-toggle" id="navToggle" aria-label="Menu openen" aria-expanded="false">
-        <span></span><span></span><span></span>
-      </button>
-    </div>
-  </header>
 
-  <!-- Hero -->
-  <section class="hero" id="home">
-    <div class="hero-overlay"></div>
-    <div class="container hero-content">
-      <p class="hero-eyebrow">Aan de Noordzeekust</p>
-      <h1>Waar de horizon eindeloos is</h1>
-      <p class="hero-sub">Een boutiquehotel direct aan het strand. Ontwaak met het geluid van de golven en geniet van pure rust, verfijnde gastronomie en onvergetelijk zeezicht.</p>
-      <div class="hero-actions">
-        <a href="#reserveren" class="btn btn-primary">Boek uw verblijf</a>
-        <a href="#kamers" class="btn btn-ghost">Bekijk de kamers</a>
+<!-- ===================== PRELOADER ===================== -->
+<div id="loader">
+  <div class="loader-mark"><span>≋</span> Hôtel Zeezicht</div>
+  <div class="loader-bar"><i></i></div>
+  <div class="loader-cap">Aan de Noordzee</div>
+</div>
+
+<!-- ===================== HEADER ===================== -->
+<header class="header" id="header">
+  <div class="container header-inner">
+    <a href="#home" class="brand"><span class="mk">≋</span> Hôtel&nbsp;Zeezicht</a>
+    <nav class="nav" id="nav">
+      <a href="#about" class="link">Hotel</a>
+      <a href="#rooms" class="link">Kamers</a>
+      <a href="#experience" class="link">Beleving</a>
+      <a href="#dine" class="link">Restaurant</a>
+      <a href="#gallery" class="link">Galerij</a>
+      <a href="#book" class="btn btn-gold">Reserveer</a>
+    </nav>
+    <button class="burger" id="burger" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<!-- ===================== HERO ===================== -->
+<section class="hero" id="home">
+  <div class="scene" id="heroScene" data-parallax="0.3">
+    <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#163b54"/><stop offset="38%" stop-color="#2f6f87"/>
+          <stop offset="62%" stop-color="#e6a86b"/><stop offset="100%" stop-color="#f6d9a8"/>
+        </linearGradient>
+        <radialGradient id="sunG" cx="50%" cy="50%" r="50%">
+          <stop offset="0" stop-color="#fff3d6"/><stop offset="45%" stop-color="#ffd98a"/>
+          <stop offset="100%" stop-color="#ffd98a" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="seaG" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#f3cfa0"/><stop offset="22%" stop-color="#5a93a0"/>
+          <stop offset="100%" stop-color="#0d3140"/>
+        </linearGradient>
+        <linearGradient id="duneG" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#143040"/><stop offset="100%" stop-color="#08222e"/>
+        </linearGradient>
+      </defs>
+      <rect width="1440" height="640" fill="url(#sky)"/>
+      <circle class="sun" cx="980" cy="300" r="220" fill="url(#sunG)"/>
+      <circle class="sun" cx="980" cy="300" r="84" fill="#fff0cf"/>
+      <!-- clouds -->
+      <g class="cloud c1" opacity=".5" fill="#ffffff">
+        <ellipse cx="260" cy="150" rx="120" ry="26"/><ellipse cx="340" cy="135" rx="90" ry="22"/>
+      </g>
+      <g class="cloud c2" opacity=".35" fill="#ffffff">
+        <ellipse cx="700" cy="110" rx="150" ry="24"/><ellipse cx="800" cy="98" rx="90" ry="18"/>
+      </g>
+      <!-- gulls -->
+      <g class="gull" stroke="#0e3140" stroke-width="3" fill="none" stroke-linecap="round" opacity=".55">
+        <path d="M400 230 q14 -14 28 0 q14 -14 28 0"/>
+        <path d="M470 260 q10 -10 20 0 q10 -10 20 0"/>
+      </g>
+      <!-- sea with sun reflection -->
+      <rect y="560" width="1440" height="160" fill="url(#seaG)"/>
+      <g opacity=".5" fill="#ffe6b8">
+        <rect x="930" y="600" width="100" height="6" rx="3"/>
+        <rect x="910" y="620" width="140" height="6" rx="3"/>
+        <rect x="940" y="640" width="80" height="6" rx="3"/>
+      </g>
+      <!-- foreground dunes -->
+      <path fill="url(#duneG)" d="M0 720 C 250 660 420 770 720 720 C 980 678 1180 760 1440 700 L1440 900 L0 900 Z"/>
+      <path fill="#08222e" opacity=".7" d="M0 800 C 300 760 520 840 820 800 C 1080 766 1240 836 1440 790 L1440 900 L0 900 Z"/>
+      <!-- beach grass -->
+      <g stroke="#0a2a36" stroke-width="3" stroke-linecap="round" opacity=".8">
+        <path d="M120 800 q-6 -50 -22 -78"/><path d="M132 800 q4 -52 18 -84"/><path d="M146 800 q10 -46 30 -70"/>
+        <path d="M1290 770 q-6 -50 -22 -78"/><path d="M1302 770 q4 -52 18 -84"/><path d="M1316 770 q10 -46 30 -70"/>
+      </g>
+    </svg>
+  </div>
+  <div class="container hero-content">
+    <span class="eyebrow light">★★★★★ · Relais aan de Noordzee</span>
+    <h1><span class="ln">Waar de horizon</span><span class="ln"><span class="em">eindeloos</span> wordt.</span></h1>
+    <p class="hero-sub">Een vijfsterren boutiquehotel met de voeten in het zand. Ontwaak op het ritme van de golven, dineer onder een gouden hemel en verdwijn in tijdloze rust.</p>
+    <div class="hero-actions">
+      <a href="#book" class="btn btn-gold">Reserveer uw verblijf →</a>
+      <a href="#rooms" class="btn btn-ghost">Ontdek de kamers</a>
+    </div>
+  </div>
+  <div class="hero-scroll"><span>Scroll</span><span class="ln"></span></div>
+</section>
+
+<!-- ===================== BOOKING BAR ===================== -->
+<form class="bookbar" id="quickbar">
+  <div class="fld"><label>Aankomst</label><input type="date" id="qIn" required></div>
+  <div class="fld"><label>Vertrek</label><input type="date" id="qOut" required></div>
+  <div class="fld"><label>Gasten</label>
+    <select id="qGuests"><option>1 gast</option><option selected>2 gasten</option><option>3 gasten</option><option>4 gasten</option></select>
+  </div>
+  <div class="fld"><label>Kamer</label>
+    <select id="qRoom"><option>Duinkamer</option><option selected>Zeezicht Deluxe</option><option>Panorama Suite</option></select>
+  </div>
+  <button class="btn btn-gold" type="submit">Check beschikbaarheid</button>
+</form>
+
+<!-- ===================== ABOUT ===================== -->
+<section class="pad" id="about">
+  <div class="container about-grid">
+    <div class="about-text reveal">
+      <span class="eyebrow">Sinds 1923</span>
+      <h2>Een eeuw gastvrijheid<br>aan het water</h2>
+      <p>Hôtel Zeezicht ligt op de allereerste rij, daar waar het duin overgaat in een eindeloos strand. Achter de art-decogevel wacht een wereld van zacht licht, natuurlijke materialen en een gastvrijheid die door drie generaties is verfijnd.</p>
+      <p>Onze 42 kamers en suites zijn stuk voor stuk een eerbetoon aan de kust: golvende texturen, de geur van zeezout en uitzichten die de hele dag van kleur veranderen.</p>
+      <p class="sign">— familie Vermeersch</p>
+      <div class="stats">
+        <div class="stat reveal d1"><div class="num" data-count="42">0</div><div class="lbl">Kamers &amp; suites</div></div>
+        <div class="stat reveal d2"><div class="num" data-count="100" data-suffix="+">0</div><div class="lbl">Jaar aan zee</div></div>
+        <div class="stat reveal d3"><div class="num" data-count="4.9" data-decimals="1">0</div><div class="lbl">Gastenscore</div></div>
       </div>
     </div>
-    <a href="#intro" class="scroll-hint" aria-label="Scroll omlaag">↓</a>
-  </section>
+    <div class="about-art reveal d1">
+      <svg viewBox="0 0 600 560" preserveAspectRatio="xMidYMid slice" aria-hidden="true" style="width:100%;height:100%">
+        <defs>
+          <linearGradient id="ab" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cde7ea"/><stop offset="55%" stop-color="#5d9aa6"/><stop offset="100%" stop-color="#0e3140"/></linearGradient>
+          <linearGradient id="abSand" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ecd9b6"/><stop offset="100%" stop-color="#d9bd8e"/></linearGradient>
+        </defs>
+        <rect width="600" height="560" fill="url(#ab)"/>
+        <circle cx="430" cy="150" r="70" fill="#fff1d2" opacity=".9"/>
+        <path d="M0 360 Q150 330 300 360 T600 360 V560 H0 Z" fill="#3f7f8c" opacity=".7"/>
+        <path d="M0 420 Q150 392 300 420 T600 420 V560 H0 Z" fill="#1f5563"/>
+        <path d="M0 470 Q200 440 400 472 T600 466 V560 H0 Z" fill="url(#abSand)"/>
+        <!-- parasol -->
+        <g transform="translate(150 360)">
+          <rect x="-3" y="-4" width="6" height="120" fill="#7a5230"/>
+          <path d="M-70 -4 A70 70 0 0 1 70 -4 Z" fill="#df9b78"/>
+          <path d="M-70 -4 A70 70 0 0 1 0 -4 Z" fill="#efe6d6"/>
+          <path d="M0 -4 A70 70 0 0 1 70 -4 Z" fill="#efe6d6"/>
+        </g>
+      </svg>
+      <div class="badge">Strand<b>0 m</b></div>
+    </div>
+  </div>
+</section>
 
-  <!-- Intro -->
-  <section class="section intro" id="intro">
-    <div class="container intro-grid">
-      <div class="intro-text">
-        <p class="eyebrow">Welkom</p>
-        <h2>Een thuis aan zee, met de zorg van een sterrenhotel</h2>
-        <p>Hotel Zeezicht ligt op de eerste rij langs het strand, waar duin en zee elkaar ontmoeten. Onze 42 kamers en suites zijn ontworpen met natuurlijke materialen en zachte tinten, geïnspireerd door het licht van de kust.</p>
-        <p>Of u nu komt voor een romantisch weekend, een zakelijk verblijf of een wellnessretraite — bij ons staat persoonlijke gastvrijheid centraal.</p>
-        <div class="intro-stats">
-          <div><strong>42</strong><span>Kamers &amp; suites</span></div>
-          <div><strong>4,9</strong><span>Gastenbeoordeling</span></div>
-          <div><strong>0&nbsp;m</strong><span>Tot het strand</span></div>
+<!-- ===================== ROOMS ===================== -->
+<section class="pad alt" id="rooms">
+  <div class="container">
+    <div class="head reveal">
+      <span class="eyebrow">Verblijf</span>
+      <h2>Kamers &amp; suites</h2>
+      <p class="lead">Drie sferen, één belofte: ontwaken met de zee binnen handbereik.</p>
+    </div>
+    <div class="rooms">
+      <!-- Room 1 -->
+      <article class="room reveal">
+        <div class="room-art"><span class="room-tag">vanaf €149</span>
+          <svg class="scene-svg" viewBox="0 0 500 260" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <rect width="500" height="260" fill="#e7d8bd"/>
+            <rect width="500" height="150" fill="#bfe0e3"/>
+            <circle cx="380" cy="70" r="46" fill="#fff0cf"/>
+            <path d="M0 150 Q125 130 250 150 T500 150 V260 H0Z" fill="#9ec3c0" opacity=".6"/>
+            <rect x="40" y="60" width="120" height="150" rx="6" fill="#fff" opacity=".25"/>
+            <rect x="40" y="60" width="120" height="150" rx="6" fill="none" stroke="#fff" stroke-width="3" opacity=".5"/>
+          </svg>
         </div>
-      </div>
-      <div class="intro-image" aria-hidden="true"></div>
-    </div>
-  </section>
-
-  <!-- Kamers -->
-  <section class="section section-alt" id="kamers">
-    <div class="container">
-      <div class="section-head">
-        <p class="eyebrow">Verblijf</p>
-        <h2>Kamers &amp; suites</h2>
-        <p class="section-lead">Elke kamer biedt comfort, rust en — bij de meeste — een onbelemmerd uitzicht op zee.</p>
-      </div>
-      <div class="rooms-grid">
-        <article class="room-card">
-          <div class="room-img room-img-1" aria-hidden="true"></div>
-          <div class="room-body">
-            <h3>Duinkamer</h3>
-            <p>Een serene kamer met zicht op de duinen, kingsize bed en regendouche.</p>
-            <ul class="room-meta">
-              <li>25 m²</li><li>2 personen</li><li>Duinzicht</li>
-            </ul>
-            <p class="room-price">vanaf <strong>€129</strong> / nacht</p>
+        <div class="room-body">
+          <h3>Duinkamer</h3>
+          <p>Sereen en licht, met zicht op de wuivende duinen en een diepe regendouche.</p>
+          <div class="room-meta"><span>◷ 25 m²</span><span>☾ 2 pers.</span><span>❀ Duinzicht</span></div>
+          <div class="room-foot">
+            <div class="room-price"><b>€149</b><small>per nacht, incl. ontbijt</small></div>
+            <a href="#book" class="btn btn-line">Reserveer</a>
           </div>
-        </article>
-        <article class="room-card">
-          <div class="room-img room-img-2" aria-hidden="true"></div>
-          <div class="room-body">
-            <h3>Zeezicht Deluxe</h3>
-            <p>Ruime kamer op de hogere verdiepingen met balkon en frontaal zeezicht.</p>
-            <ul class="room-meta">
-              <li>32 m²</li><li>2 personen</li><li>Balkon</li>
-            </ul>
-            <p class="room-price">vanaf <strong>€189</strong> / nacht</p>
+        </div>
+      </article>
+      <!-- Room 2 -->
+      <article class="room reveal d1">
+        <div class="room-art"><span class="room-tag">populairst</span>
+          <svg class="scene-svg" viewBox="0 0 500 260" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <rect width="500" height="260" fill="#0e3140"/>
+            <rect width="500" height="150" fill="#3f8fa0"/>
+            <rect width="500" height="70" fill="#e8b573"/>
+            <circle cx="250" cy="80" r="40" fill="#fff1d2"/>
+            <path d="M0 150 Q125 128 250 150 T500 150 V260 H0Z" fill="#1f6f7d"/>
+            <g fill="#ffe6b8" opacity=".5"><rect x="220" y="120" width="60" height="5"/><rect x="210" y="135" width="80" height="5"/></g>
+          </svg>
+        </div>
+        <div class="room-body">
+          <h3>Zeezicht Deluxe</h3>
+          <p>Ruim balkon op de hoogste verdiepingen met frontaal, onbelemmerd zeezicht.</p>
+          <div class="room-meta"><span>◷ 32 m²</span><span>☾ 2 pers.</span><span>❀ Balkon &amp; zee</span></div>
+          <div class="room-foot">
+            <div class="room-price"><b>€219</b><small>per nacht, incl. ontbijt</small></div>
+            <a href="#book" class="btn btn-line">Reserveer</a>
           </div>
-        </article>
-        <article class="room-card">
-          <div class="room-img room-img-3" aria-hidden="true"></div>
-          <div class="room-body">
-            <h3>Panorama Suite</h3>
-            <p>Onze mooiste suite met aparte zithoek, vrijstaand bad en panoramaraam.</p>
-            <ul class="room-meta">
-              <li>55 m²</li><li>2–3 personen</li><li>Panorama</li>
-            </ul>
-            <p class="room-price">vanaf <strong>€299</strong> / nacht</p>
+        </div>
+      </article>
+      <!-- Room 3 -->
+      <article class="room reveal d2">
+        <div class="room-art"><span class="room-tag">signature suite</span>
+          <svg class="scene-svg" viewBox="0 0 500 260" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+            <rect width="500" height="260" fill="#163e4f"/>
+            <rect width="500" height="160" fill="#bcdfe4"/>
+            <rect width="500" height="64" fill="#f0c993"/>
+            <circle cx="120" cy="70" r="50" fill="#fff0cf"/>
+            <path d="M0 160 Q125 138 250 160 T500 160 V260 H0Z" fill="#2c7d96"/>
+            <rect x="300" y="40" width="160" height="200" rx="8" fill="#fff" opacity=".2"/>
+            <rect x="300" y="40" width="160" height="200" rx="8" fill="none" stroke="#fff" stroke-width="3" opacity=".45"/>
+          </svg>
+        </div>
+        <div class="room-body">
+          <h3>Panorama Suite</h3>
+          <p>Onze kroonjuweel: aparte salon, vrijstaand bad en een panoramaraam op de branding.</p>
+          <div class="room-meta"><span>◷ 58 m²</span><span>☾ 2–3 pers.</span><span>❀ Panorama</span></div>
+          <div class="room-foot">
+            <div class="room-price"><b>€349</b><small>per nacht, incl. ontbijt</small></div>
+            <a href="#book" class="btn btn-line">Reserveer</a>
           </div>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <!-- Faciliteiten -->
-  <section class="section" id="faciliteiten">
-    <div class="container">
-      <div class="section-head">
-        <p class="eyebrow">Comfort</p>
-        <h2>Faciliteiten</h2>
-        <p class="section-lead">Alles voor een zorgeloos verblijf, op een steenworp van het water.</p>
-      </div>
-      <div class="features-grid">
-        <div class="feature"><span class="feature-icon">🌊</span><h3>Wellness &amp; spa</h3><p>Verwarmd binnenzwembad, sauna en behandelingen met zeewierproducten.</p></div>
-        <div class="feature"><span class="feature-icon">🍽️</span><h3>Restaurant</h3><p>Verse vis en seizoensgerechten met uitzicht op de branding.</p></div>
-        <div class="feature"><span class="feature-icon">🚲</span><h3>Fietsverhuur</h3><p>Ontdek de kustlijn en duinpaden met onze comfortabele huurfietsen.</p></div>
-        <div class="feature"><span class="feature-icon">🐾</span><h3>Huisdiervriendelijk</h3><p>Uw viervoeter is van harte welkom in de meeste kamers.</p></div>
-        <div class="feature"><span class="feature-icon">🅿️</span><h3>Gratis parkeren</h3><p>Ruime privéparking direct naast het hotel.</p></div>
-        <div class="feature"><span class="feature-icon">📶</span><h3>Snel wifi</h3><p>Gratis glasvezel-wifi in het hele hotel.</p></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Restaurant -->
-  <section class="section section-dark" id="restaurant">
-    <div class="container restaurant-grid">
-      <div class="restaurant-image" aria-hidden="true"></div>
-      <div class="restaurant-text">
-        <p class="eyebrow eyebrow-light">Gastronomie</p>
-        <h2>Restaurant De&nbsp;Branding</h2>
-        <p>Onze chef laat zich elke dag inspireren door de vangst van de lokale vissers en de oogst van kusttuinders. Het resultaat: eerlijke, verfijnde gerechten met een ziltje zeebries.</p>
-        <p>Geniet van een uitgebreid ontbijtbuffet, een lichte lunch op het terras of een meergangendiner terwijl de zon ondergaat boven de zee.</p>
-        <ul class="restaurant-hours">
-          <li><span>Ontbijt</span><span>07:00 – 10:30</span></li>
-          <li><span>Lunch</span><span>12:00 – 14:30</span></li>
-          <li><span>Diner</span><span>18:00 – 22:00</span></li>
-        </ul>
-        <a href="#reserveren" class="btn btn-primary">Tafel reserveren</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- Omgeving -->
-  <section class="section section-alt" id="omgeving">
-    <div class="container">
-      <div class="section-head">
-        <p class="eyebrow">Beleef de kust</p>
-        <h2>De omgeving</h2>
-        <p class="section-lead">Strand, duinen en sfeervolle dorpjes — allemaal binnen handbereik.</p>
-      </div>
-      <div class="env-grid">
-        <article class="env-card"><h3>Het strand</h3><p>Kilometers fijn zandstrand voor de deur, perfect voor lange wandelingen bij eb.</p></article>
-        <article class="env-card"><h3>Duinreservaat</h3><p>Een beschermd natuurgebied met wandel- en fietsroutes door de duinen.</p></article>
-        <article class="env-card"><h3>Vissershaven</h3><p>Proef de verse garnalen en mosselen in het pittoreske havendorp.</p></article>
-        <article class="env-card"><h3>Watersport</h3><p>Surfen, kitesurfen en zeilen onder begeleiding van de lokale watersportclub.</p></article>
-      </div>
-    </div>
-  </section>
-
-  <!-- Reserveren -->
-  <section class="section reserve" id="reserveren">
-    <div class="container reserve-inner">
-      <div class="section-head">
-        <p class="eyebrow">Reserveren</p>
-        <h2>Plan uw verblijf</h2>
-        <p class="section-lead">Controleer beschikbaarheid en stuur ons uw aanvraag. We bevestigen binnen 24&nbsp;uur.</p>
-      </div>
-      <form class="reserve-form" id="reserveForm" novalidate>
-        <div class="form-row">
-          <label>Naam
-            <input type="text" name="naam" required placeholder="Uw naam" />
-          </label>
-          <label>E-mail
-            <input type="email" name="email" required placeholder="naam@voorbeeld.be" />
-          </label>
         </div>
-        <div class="form-row">
-          <label>Aankomst
-            <input type="date" name="aankomst" required />
-          </label>
-          <label>Vertrek
-            <input type="date" name="vertrek" required />
-          </label>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== EXPERIENCES ===================== -->
+<section class="pad" id="experience">
+  <div class="container">
+    <div class="head reveal">
+      <span class="eyebrow">Beleving</span>
+      <h2>Tijd om te verdwijnen</h2>
+      <p class="lead">Alles voor een verblijf dat nazindert, op een steenworp van het water.</p>
+    </div>
+    <div class="exp">
+      <div class="exp-card reveal">
+        <svg class="ic" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 30c4-4 8-4 12 0s8 4 12 0 8-4 12 0"/><path d="M4 38c4-4 8-4 12 0s8 4 12 0 8-4 12 0"/><circle cx="24" cy="14" r="6"/></svg>
+        <h3>Thalasso &amp; spa</h3><p>Verwarmd zeewaterbad, hammam en behandelingen op basis van zeewier en zout.</p>
+      </div>
+      <div class="exp-card reveal d1">
+        <svg class="ic" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 6v14a6 6 0 0 0 12 0V6M20 6v36M34 6c-3 0-5 4-5 10s2 8 5 8v18"/></svg>
+        <h3>Sterrenkeuken</h3><p>Restaurant De Branding: dagverse vis, lokale oesters en een gelauwerde wijnkelder.</p>
+      </div>
+      <div class="exp-card reveal d2">
+        <svg class="ic" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="14" cy="34" r="7"/><circle cx="34" cy="34" r="7"/><path d="M14 34l8-16h8M22 18l6 16M30 14h6"/></svg>
+        <h3>Kustavonturen</h3><p>Elektrische fietsen, zeilen, kitesurfen en wandelingen door het natuurreservaat.</p>
+      </div>
+      <div class="exp-card reveal d3">
+        <svg class="ic" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M24 8s12 8 12 18a12 12 0 0 1-24 0C12 16 24 8 24 8Z"/><path d="M24 40v-8"/></svg>
+        <h3>Privé strandservice</h3><p>Uw eigen ligbed, parasol en cocktailservice — gewoon op het zand voor de deur.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== RESTAURANT ===================== -->
+<section class="pad dine" id="dine">
+  <div class="scene" data-parallax="0.18">
+    <svg viewBox="0 0 1440 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true" style="width:100%;height:100%">
+      <defs><linearGradient id="dn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0c2a38"/><stop offset="100%" stop-color="#061620"/></linearGradient></defs>
+      <rect width="1440" height="700" fill="url(#dn)"/>
+      <circle cx="1100" cy="160" r="150" fill="#1c4a55" opacity=".5"/>
+      <path d="M0 480 Q360 440 720 480 T1440 480 V700 H0Z" fill="#0a2530"/>
+      <path d="M0 540 Q360 510 720 540 T1440 540 V700 H0Z" fill="#08202a"/>
+    </svg>
+  </div>
+  <div class="container dine-grid">
+    <div class="dine-text reveal">
+      <span class="eyebrow light">Gastronomie</span>
+      <h2>Restaurant De Branding</h2>
+      <p>Onze chef leest elke ochtend de zee. Wat de lokale vissers binnenbrengen, ligt 's avonds op uw bord — puur, verfijnd en met een ziltje zeebries. Dineer bij kaarslicht terwijl de zon in het water zakt.</p>
+      <ul class="menu">
+        <li><span><span class="nm">Oesters van de Oosterschelde</span><br><span class="ds">citroenparel · zeewier · mignonette</span></span><span class="pr">€24</span></li>
+        <li><span><span class="nm">Noordzeetong à la meunière</span><br><span class="ds">geklaarde boter · kappertjes · kruidenaardappel</span></span><span class="pr">€42</span></li>
+        <li><span><span class="nm">Bouillabaisse van de kust</span><br><span class="ds">saffraan · rouille · geroosterd brood</span></span><span class="pr">€38</span></li>
+      </ul>
+      <a href="#book" class="btn btn-gold">Reserveer een tafel</a>
+    </div>
+    <div class="dine-art reveal d1">
+      <svg viewBox="0 0 600 480" preserveAspectRatio="xMidYMid slice" aria-hidden="true" style="width:100%;height:100%">
+        <defs><radialGradient id="cdl" cx="50%" cy="40%" r="60%"><stop offset="0" stop-color="#3a2417"/><stop offset="100%" stop-color="#140b06"/></radialGradient></defs>
+        <rect width="600" height="480" fill="url(#cdl)"/>
+        <ellipse cx="300" cy="400" rx="260" ry="40" fill="#1d120a"/>
+        <!-- plate -->
+        <ellipse cx="300" cy="300" rx="150" ry="46" fill="#2a1a10"/>
+        <ellipse cx="300" cy="294" rx="150" ry="46" fill="#efe6d6"/>
+        <ellipse cx="300" cy="292" rx="96" ry="28" fill="#e3d3ba"/>
+        <ellipse cx="290" cy="288" rx="40" ry="14" fill="#c98f5f"/>
+        <circle cx="320" cy="286" r="8" fill="#7fae5a"/><circle cx="270" cy="296" r="6" fill="#df9b78"/>
+        <!-- candle -->
+        <rect x="110" y="150" width="14" height="120" rx="6" fill="#efe6d6"/>
+        <ellipse cx="117" cy="270" rx="22" ry="8" fill="#caa"/>
+        <path d="M117 150 q-10 -22 0 -34 q10 12 0 34" fill="#ffd98a"/>
+        <circle cx="117" cy="132" r="20" fill="#ffd98a" opacity=".4"/>
+        <!-- wine glass -->
+        <path d="M470 150 q24 4 24 40 q0 30 -24 36 q-24 -6 -24 -36 q0 -36 24 -40Z" fill="#7a2230" opacity=".85"/>
+        <rect x="468" y="262" width="4" height="60" fill="#cbb"/><ellipse cx="470" cy="324" rx="26" ry="7" fill="#cbb"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== GALLERY ===================== -->
+<section class="pad alt" id="gallery">
+  <div class="container">
+    <div class="head reveal">
+      <span class="eyebrow">Galerij</span>
+      <h2>Een blik op het verblijf</h2>
+      <p class="lead">Klik om elk tafereel groot te bekijken.</p>
+    </div>
+    <div class="gallery" id="gallery"></div>
+  </div>
+</section>
+
+<!-- ===================== TESTIMONIALS ===================== -->
+<section class="pad" id="reviews">
+  <div class="container">
+    <div class="head reveal"><span class="eyebrow">Gasten vertellen</span><h2>Onvergetelijk, telkens weer</h2></div>
+    <div class="quotes reveal d1" id="quotes">
+      <div class="quote active">
+        <div class="stars">★★★★★</div><div class="mark">“</div>
+        <p>Wakker worden met de golven en inslapen onder een sterrenhemel. Dit is geen hotel, dit is een gevoel dat blijft plakken.</p>
+        <div class="who">Anouk &amp; Pieter · Gent</div>
+      </div>
+      <div class="quote">
+        <div class="stars">★★★★★</div><div class="mark">“</div>
+        <p>Het diner in De Branding was het beste visgerecht van ons leven. De service voelde als thuiskomen bij familie.</p>
+        <div class="who">The Harrisons · Londen</div>
+      </div>
+      <div class="quote">
+        <div class="stars">★★★★★</div><div class="mark">“</div>
+        <p>De Panorama Suite is pure poëzie. We hebben uren naar de zee gestaard vanuit het bad. We komen gegarandeerd terug.</p>
+        <div class="who">Familie Janssens · Antwerpen</div>
+      </div>
+    </div>
+    <div class="dots" id="dots"></div>
+  </div>
+</section>
+
+<!-- ===================== BOOKING ===================== -->
+<section class="pad alt" id="book">
+  <div class="container">
+    <div class="head reveal"><span class="eyebrow">Reserveren</span><h2>Plan uw verblijf</h2>
+      <p class="lead">Stuur uw aanvraag — we bevestigen persoonlijk binnen 24 uur.</p></div>
+    <div class="book-wrap reveal d1">
+      <div class="book-side">
+        <div class="scene">
+          <svg viewBox="0 0 500 700" preserveAspectRatio="xMidYMid slice" aria-hidden="true" style="width:100%;height:100%">
+            <defs><linearGradient id="bs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0e3140"/><stop offset="100%" stop-color="#061620"/></linearGradient></defs>
+            <rect width="500" height="700" fill="url(#bs)"/>
+            <circle cx="380" cy="120" r="90" fill="#143f4c" opacity=".6"/>
+            <path d="M0 460 Q125 430 250 460 T500 460 V700 H0Z" fill="#0a2530"/>
+          </svg>
         </div>
-        <div class="form-row">
-          <label>Kamertype
-            <select name="kamer">
-              <option>Duinkamer</option>
-              <option>Zeezicht Deluxe</option>
-              <option>Panorama Suite</option>
-            </select>
-          </label>
-          <label>Gasten
-            <select name="gasten">
-              <option>1 gast</option>
-              <option selected>2 gasten</option>
-              <option>3 gasten</option>
-              <option>4 gasten</option>
-            </select>
-          </label>
+        <div class="inner">
+          <h2>Het Zeezicht-<br>privilege</h2>
+          <p>Bij elke directe reservering inbegrepen:</p>
+          <ul>
+            <li><span class="ck">✦</span> Gratis upgrade indien beschikbaar</li>
+            <li><span class="ck">✦</span> Dagelijks ontbijtbuffet met zeezicht</li>
+            <li><span class="ck">✦</span> Toegang tot thalasso &amp; spa</li>
+            <li><span class="ck">✦</span> Late check-out tot 14u</li>
+            <li><span class="ck">✦</span> Welkomstfles cava op de kamer</li>
+          </ul>
         </div>
-        <label>Opmerkingen
-          <textarea name="opmerkingen" rows="3" placeholder="Speciale wensen, dieetvereisten…"></textarea>
-        </label>
-        <button type="submit" class="btn btn-primary btn-block">Aanvraag versturen</button>
-        <p class="form-msg" id="formMsg" role="status"></p>
+      </div>
+      <form class="book-form" id="bookForm" novalidate>
+        <div class="row">
+          <label>Naam<input type="text" name="naam" placeholder="Uw naam" required></label>
+          <label>E-mail<input type="email" name="email" placeholder="naam@voorbeeld.be" required></label>
+        </div>
+        <div class="row">
+          <label>Aankomst<input type="date" name="aankomst" id="bIn" required></label>
+          <label>Vertrek<input type="date" name="vertrek" id="bOut" required></label>
+        </div>
+        <div class="row">
+          <label>Kamertype<select name="kamer" id="bRoom">
+            <option data-price="149">Duinkamer — €149</option>
+            <option data-price="219" selected>Zeezicht Deluxe — €219</option>
+            <option data-price="349">Panorama Suite — €349</option>
+          </select></label>
+          <label>Gasten<select name="gasten"><option>1 gast</option><option selected>2 gasten</option><option>3 gasten</option><option>4 gasten</option></select></label>
+        </div>
+        <label>Opmerkingen<textarea name="opm" rows="2" placeholder="Speciale wensen, dieetvereisten…"></textarea></label>
+        <div class="estimate"><span class="lbl" id="estLbl">Selecteer uw data</span><span class="val" id="estVal">—</span></div>
+        <button type="submit" class="btn btn-gold btn-block">Aanvraag versturen</button>
+        <p class="msg" id="bookMsg" role="status"></p>
       </form>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- Contact / Footer -->
-  <footer class="footer" id="contact">
-    <div class="container footer-grid">
-      <div class="footer-brand">
-        <a href="#home" class="logo logo-light">
-          <span class="logo-mark">≋</span>
-          <span class="logo-text">Hotel&nbsp;Zeezicht</span>
-        </a>
-        <p>Een boutiquehotel direct aan de Noordzee, waar gastvrijheid en het ritme van de zee samenkomen.</p>
-      </div>
-      <div class="footer-col">
-        <h4>Contact</h4>
-        <p>Zeedijk 1<br />8400 Kuststad, België</p>
-        <p><a href="tel:+3259000000">+32 59 00 00 00</a><br /><a href="mailto:welkom@hotelzeezicht.be">welkom@hotelzeezicht.be</a></p>
-      </div>
-      <div class="footer-col">
-        <h4>Navigatie</h4>
-        <ul>
-          <li><a href="#kamers">Kamers</a></li>
-          <li><a href="#faciliteiten">Faciliteiten</a></li>
-          <li><a href="#restaurant">Restaurant</a></li>
-          <li><a href="#reserveren">Reserveren</a></li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <h4>Volg ons</h4>
-        <ul>
-          <li><a href="#">Instagram</a></li>
-          <li><a href="#">Facebook</a></li>
-          <li><a href="#">Nieuwsbrief</a></li>
-        </ul>
-      </div>
+<!-- ===================== FOOTER ===================== -->
+<footer class="footer" id="contact">
+  <div class="scene">
+    <svg viewBox="0 0 1440 200" preserveAspectRatio="none" aria-hidden="true" style="width:100%;height:100%">
+      <path d="M0 120 Q240 80 480 120 T960 120 T1440 120 V200 H0Z" fill="#0a2530"/>
+      <path d="M0 150 Q240 120 480 150 T960 150 T1440 150 V200 H0Z" fill="#08202a"/>
+    </svg>
+  </div>
+  <div class="container f-grid">
+    <div class="f-brand">
+      <a href="#home" class="brand"><span class="mk">≋</span> Hôtel&nbsp;Zeezicht</a>
+      <p>Een vijfsterren relais aan de Noordzee, waar gastvrijheid en het ritme van de zee al een eeuw samenkomen.</p>
     </div>
-    <div class="container footer-bottom">
-      <p>© <span id="year"></span> Hotel Zeezicht. Alle rechten voorbehouden.</p>
-      <p>Ontworpen met ❤︎ aan de kust.</p>
+    <div class="f-col">
+      <h4>Ontdek</h4>
+      <ul><li><a href="#rooms">Kamers</a></li><li><a href="#experience">Beleving</a></li><li><a href="#dine">Restaurant</a></li><li><a href="#gallery">Galerij</a></li></ul>
     </div>
-  </footer>
+    <div class="f-col">
+      <h4>Contact</h4>
+      <p>Zeedijk 1<br>8400 Kuststad, België</p>
+      <p><a href="tel:+3259000000">+32 59 00 00 00</a><br><a href="mailto:welkom@hotelzeezicht.be">welkom@hotelzeezicht.be</a></p>
+    </div>
+    <div class="f-col">
+      <h4>Nieuwsbrief</h4>
+      <p>Kustverhalen &amp; aanbiedingen, een paar keer per jaar.</p>
+      <form class="news" id="newsForm"><input type="email" placeholder="Uw e-mail" required><button type="submit">Inschrijven</button></form>
+    </div>
+  </div>
+  <div class="container f-bottom">
+    <p>© <span id="yr"></span> Hôtel Zeezicht — Alle rechten voorbehouden.</p>
+    <p>Ontworpen met ❤︎ aan de kust.</p>
+  </div>
+</footer>
 
-  <script src="script.js"></script>
+<!-- ===================== LIGHTBOX ===================== -->
+<div class="lb" id="lb">
+  <button class="lb-close" id="lbClose" aria-label="Sluiten">✕</button>
+  <button class="lb-btn lb-prev" id="lbPrev" aria-label="Vorige">‹</button>
+  <div class="lb-stage" id="lbStage"><div class="lb-cap" id="lbCap"></div></div>
+  <button class="lb-btn lb-next" id="lbNext" aria-label="Volgende">›</button>
+</div>
+
+<script>
+/* ===================================================================
+   HÔTEL ZEEZICHT — interactions (vanilla JS, geen externe libraries)
+   =================================================================== */
+const $ = (s,c=document)=>c.querySelector(s);
+const $$ = (s,c=document)=>[...c.querySelectorAll(s)];
+
+/* ---- preloader ---- */
+window.addEventListener('load',()=>setTimeout(()=>$('#loader').classList.add('done'),900));
+
+/* ---- year ---- */
+$('#yr').textContent=new Date().getFullYear();
+
+/* ---- header: shrink + hide on scroll down ---- */
+const header=$('#header');let lastY=0;
+const onScroll=()=>{
+  const y=window.scrollY;
+  header.classList.toggle('scrolled',y>40);
+  header.classList.toggle('hidden',y>lastY&&y>500);
+  lastY=y;
+  // parallax scenes
+  $$('[data-parallax]').forEach(el=>{
+    const sp=parseFloat(el.dataset.parallax);
+    const r=el.getBoundingClientRect();
+    el.style.transform=`translateY(${ (r.top*-sp) }px)`;
+  });
+};
+window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+
+/* ---- mobile nav ---- */
+const burger=$('#burger'),nav=$('#nav');
+burger.addEventListener('click',()=>{burger.classList.toggle('open');nav.classList.toggle('open');});
+$$('#nav a').forEach(a=>a.addEventListener('click',()=>{burger.classList.remove('open');nav.classList.remove('open');}));
+
+/* ---- reveal on scroll ---- */
+const io=new IntersectionObserver((es)=>{
+  es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});
+},{threshold:.15});
+$$('.reveal').forEach(el=>io.observe(el));
+
+/* ---- animated counters ---- */
+const cio=new IntersectionObserver((es)=>{
+  es.forEach(e=>{
+    if(!e.isIntersecting)return;
+    const el=e.target,target=parseFloat(el.dataset.count),dec=+(el.dataset.decimals||0),suf=el.dataset.suffix||'';
+    const dur=1600,t0=performance.now();
+    const tick=(t)=>{
+      const p=Math.min((t-t0)/dur,1),val=(target*(1-Math.pow(1-p,3)));
+      el.textContent=val.toFixed(dec).replace('.',',')+suf;
+      if(p<1)requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);cio.unobserve(el);
+  });
+},{threshold:.6});
+$$('[data-count]').forEach(el=>cio.observe(el));
+
+/* ---- gallery + scenes (generated SVG taferelen) ---- */
+const scenes=[
+  {t:'Gouden uur op het terras',c:['#163b54','#e6a86b','#f6d9a8']},
+  {t:'De Panorama Suite',c:['#0e3140','#3f8fa0','#bcdfe4']},
+  {t:'Branding bij zonsondergang',c:['#1a2a44','#df7b5a','#f3c08a']},
+  {t:'Thalasso & spa',c:['#0c3a44','#2f8a96','#bfe4e6']},
+  {t:'Strand voor de deur',c:['#bfe0e3','#7fb4c0','#e7d8bd']},
+  {t:'Diner bij kaarslicht',c:['#140b06','#7a2230','#e6cd8f']},
+];
+function sceneSVG(s,seed){
+  const[g1,g2,g3]=s.c;const id='lg'+seed;
+  return `<svg class="scene-svg" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="${g1}"/><stop offset="55%" stop-color="${g2}"/><stop offset="100%" stop-color="${g3}"/></linearGradient></defs>
+    <rect width="400" height="400" fill="url(#${id})"/>
+    <circle cx="${120+seed*40}" cy="120" r="56" fill="#fff1d2" opacity=".85"/>
+    <path d="M0 250 Q100 225 200 250 T400 250 V400 H0Z" fill="rgba(255,255,255,.14)"/>
+    <path d="M0 300 Q100 275 200 300 T400 300 V400 H0Z" fill="rgba(0,0,0,.18)"/></svg>`;
+}
+const layout=['tall','','wide','','','tall'];
+const gWrap=$('#gallery');
+scenes.forEach((s,i)=>{
+  const d=document.createElement('div');
+  d.className='g-item '+(layout[i]||'');
+  d.innerHTML=sceneSVG(s,i+1);
+  d.addEventListener('click',()=>openLB(i));
+  gWrap.appendChild(d);
+});
+
+/* ---- lightbox ---- */
+const lb=$('#lb'),lbStage=$('#lbStage'),lbCap=$('#lbCap');let lbI=0;
+function renderLB(){
+  const s=scenes[lbI];
+  lbStage.querySelectorAll('svg').forEach(n=>n.remove());
+  lbStage.insertAdjacentHTML('afterbegin',sceneSVG(s,lbI+1).replace('class="scene-svg"','style="position:absolute;inset:0;width:100%;height:100%"'));
+  lbCap.textContent=s.t;
+}
+function openLB(i){lbI=i;renderLB();lb.classList.add('open');document.body.style.overflow='hidden';}
+function closeLB(){lb.classList.remove('open');document.body.style.overflow='';}
+function step(d){lbI=(lbI+d+scenes.length)%scenes.length;renderLB();}
+$('#lbClose').addEventListener('click',closeLB);
+$('#lbPrev').addEventListener('click',()=>step(-1));
+$('#lbNext').addEventListener('click',()=>step(1));
+lb.addEventListener('click',e=>{if(e.target===lb)closeLB();});
+document.addEventListener('keydown',e=>{if(!lb.classList.contains('open'))return;
+  if(e.key==='Escape')closeLB();if(e.key==='ArrowRight')step(1);if(e.key==='ArrowLeft')step(-1);});
+
+/* ---- testimonials carousel ---- */
+const quotes=$$('.quote'),dots=$('#dots');let qi=0,qTimer;
+quotes.forEach((_,i)=>{const b=document.createElement('button');if(i===0)b.classList.add('on');
+  b.addEventListener('click',()=>{go(i);reset();});dots.appendChild(b);});
+function go(i){quotes[qi].classList.remove('active');dots.children[qi].classList.remove('on');
+  qi=i;quotes[qi].classList.add('active');dots.children[qi].classList.add('on');}
+function reset(){clearInterval(qTimer);qTimer=setInterval(()=>go((qi+1)%quotes.length),5500);}
+reset();
+
+/* ---- date defaults + price estimate ---- */
+const today=new Date(),tmrw=new Date(Date.now()+864e5),in3=new Date(Date.now()+3*864e5);
+const iso=d=>d.toISOString().slice(0,10);
+['#qIn','#bIn'].forEach(s=>{$(s).min=iso(today);$(s).value=iso(tmrw);});
+['#qOut','#bOut'].forEach(s=>{$(s).min=iso(tmrw);$(s).value=iso(in3);});
+const bIn=$('#bIn'),bOut=$('#bOut'),bRoom=$('#bRoom'),estLbl=$('#estLbl'),estVal=$('#estVal');
+function estimate(){
+  const a=new Date(bIn.value),b=new Date(bOut.value);
+  const nights=Math.round((b-a)/864e5);
+  const price=+bRoom.selectedOptions[0].dataset.price;
+  if(!nights||nights<1){estLbl.textContent='Selecteer geldige data';estVal.textContent='—';return;}
+  estLbl.textContent=`${nights} ${nights===1?'nacht':'nachten'} × €${price}`;
+  estVal.textContent='€'+(nights*price).toLocaleString('nl-BE');
+}
+[bIn,bOut,bRoom].forEach(el=>el.addEventListener('change',estimate));estimate();
+
+/* ---- quickbar -> scroll to booking & sync ---- */
+$('#quickbar').addEventListener('submit',e=>{
+  e.preventDefault();
+  bIn.value=$('#qIn').value;bOut.value=$('#qOut').value;
+  $('#bRoom').selectedIndex=$('#qRoom').selectedIndex;estimate();
+  $('#book').scrollIntoView({behavior:'smooth'});
+});
+
+/* ---- booking form ---- */
+const bookForm=$('#bookForm'),bookMsg=$('#bookMsg');
+bookForm.addEventListener('submit',e=>{
+  e.preventDefault();bookMsg.className='msg';
+  if(!bookForm.checkValidity()){bookMsg.textContent='Vul alle verplichte velden in.';bookMsg.classList.add('err');bookForm.reportValidity();return;}
+  if(new Date(bOut.value)<=new Date(bIn.value)){bookMsg.textContent='De vertrekdatum moet na de aankomst liggen.';bookMsg.classList.add('err');return;}
+  const naam=new FormData(bookForm).get('naam');
+  bookMsg.textContent=`Bedankt, ${naam}! Uw aanvraag (${estVal.textContent}) is ontvangen — we bevestigen binnen 24 uur.`;
+  bookMsg.classList.add('ok');bookForm.reset();estLbl.textContent='Selecteer uw data';estVal.textContent='—';
+});
+
+/* ---- newsletter ---- */
+$('#newsForm').addEventListener('submit',e=>{e.preventDefault();e.target.querySelector('input').value='';
+  const b=e.target.querySelector('button');b.textContent='Bedankt ✓';setTimeout(()=>b.textContent='Inschrijven',2500);});
+</script>
 </body>
 </html>
