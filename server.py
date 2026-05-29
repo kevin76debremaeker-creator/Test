@@ -105,14 +105,17 @@ def index():
 @app.get("/api/availability")
 def availability():
     date = request.args.get("date", "")
-    if not date:
-        return jsonify({"error": "Parameter 'date' ontbreekt."}), 400
+    try:
+        datetime.date.fromisoformat(date)
+    except ValueError:
+        return jsonify({"error": "Ongeldige of ontbrekende datum."}), 400
     try:
         return jsonify({"booked": gcal.list_booked(date)})
     except gcal.CalendarError as e:
         return jsonify({"error": str(e)}), 503
-    except Exception as e:  # pragma: no cover - onverwachte API-fout
-        return jsonify({"error": f"Agenda-fout: {e}"}), 500
+    except Exception:  # pragma: no cover - onverwachte API-fout
+        app.logger.exception("Beschikbaarheid ophalen mislukt")
+        return jsonify({"error": "Agenda tijdelijk niet beschikbaar."}), 500
 
 
 @app.post("/api/book")

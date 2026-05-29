@@ -367,7 +367,11 @@
       if (!res.ok) throw new Error(data.error || 'Onbekende fout');
       booked = data.booked || [];
     } catch (e) {
-      slotsEl.innerHTML = `<div class="slot-empty">⚠️ Kon beschikbaarheid niet laden: ${e.message}. Draait de server?</div>`;
+      const note = document.createElement('div');
+      note.className = 'slot-empty';
+      note.textContent = `⚠️ Kon beschikbaarheid niet laden: ${e.message}. Draait de server?`;
+      slotsEl.innerHTML = '';
+      slotsEl.appendChild(note);
       return;
     }
 
