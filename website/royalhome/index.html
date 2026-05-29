@@ -100,6 +100,10 @@ h3{font-size:1.45rem}
 .hero{position:relative;height:100vh;min-height:680px;overflow:hidden;color:#fff;display:flex;align-items:center}
 .scene{position:absolute;inset:0;z-index:0}
 .scene svg{width:100%;height:100%;display:block}
+/* real photo layered over the SVG fallback (img removes itself on load error) */
+.photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;
+  opacity:0;transition:opacity .8s var(--ease)}
+.photo.loaded{opacity:1}
 .sun{animation:sunGlow 6s ease-in-out infinite}
 @keyframes sunGlow{0%,100%{opacity:.92}50%{opacity:1}}
 .palm{transform-box:fill-box;transform-origin:bottom center;animation:sway 5s ease-in-out infinite}
@@ -333,6 +337,7 @@ h3{font-size:1.45rem}
 <!-- HERO -->
 <section class="hero" id="home">
   <div class="scene" data-parallax="0.25">
+    <img class="photo" alt="" data-src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1920&q=80" />
     <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
       <defs>
         <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
@@ -479,6 +484,7 @@ h3{font-size:1.45rem}
       <a href="#contact" class="btn btn-line" style="margin-top:1.6rem">Maak kennis met ons team</a>
     </div>
     <div class="about-art reveal d1">
+      <img class="photo" alt="Luxe villa met zwembad aan de Spaanse kust" data-src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=80" />
       <svg viewBox="0 0 600 540" preserveAspectRatio="xMidYMid slice" aria-hidden="true" style="width:100%;height:100%">
         <defs>
           <linearGradient id="abSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fb0c4"/><stop offset="100%" stop-color="#e9d7b4"/></linearGradient>
@@ -595,6 +601,17 @@ const $$=(s,c=document)=>[...c.querySelectorAll(s)];
 window.addEventListener('load',()=>setTimeout(()=>$('#loader').classList.add('done'),900));
 $('#yr').textContent=new Date().getFullYear();
 
+/* photo loader: laad echte foto's; valt terug op de SVG-scène bij fout/offline */
+function loadPhotos(root=document){
+  root.querySelectorAll('img.photo[data-src]').forEach(img=>{
+    const url=img.getAttribute('data-src');
+    img.removeAttribute('data-src');
+    img.addEventListener('load',()=>img.classList.add('loaded'));
+    img.addEventListener('error',()=>img.remove()); // toon SVG-fallback eronder
+    img.src=url;
+  });
+}
+
 /* header */
 const header=$('#header');let lastY=0;
 const onScroll=()=>{
@@ -642,13 +659,14 @@ function villaScene(seed,palette){
       <g fill="#2f6f4f"><path d="M190 150 q-40 -12 -64 10 q36 -4 64 2Z"/><path d="M190 150 q40 -12 64 10 q-36 -4 -64 2Z"/></g></g>
   </svg>`;
 }
+const IMG=(id,w=900)=>`https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=80`;
 const properties=[
-  {n:'Villa Marisol',loc:'Moraira · Costa Blanca',reg:'Costa Blanca',type:'Villa',price:875000,beds:4,baths:3,m2:240,tag:'Zeezicht',pal:['#6fa6c0','#e9d7b4','#3f7e8c']},
-  {n:'Penthouse Azul',loc:'Calpe · Costa Blanca',reg:'Costa Blanca',type:'Penthouse',price:595000,beds:3,baths:2,m2:155,tag:'Nieuwbouw',pal:['#5a90b0','#f0d3a8','#c87f5a']},
-  {n:'Apartamento Brisa',loc:'La Manga · Mar Menor',reg:'Mar Menor',type:'Appartement',price:289000,beds:2,baths:2,m2:92,tag:'Aan zee',pal:['#7fb6c9','#e6e0cc','#3f9aa8']},
-  {n:'Villa Dorada',loc:'Jávea · Costa Blanca',reg:'Costa Blanca',type:'Villa',price:1250000,beds:5,baths:4,m2:320,tag:'Exclusief',pal:['#4f7e96','#f2dcb0','#3f7e8c']},
-  {n:'Penthouse Sol',loc:'Murcia · Costa Cálida',reg:'Costa Cálida',type:'Penthouse',price:430000,beds:3,baths:2,m2:130,tag:'Dakterras',pal:['#6aa0bc','#ecd9b6','#c87f5a']},
-  {n:'Apartamento Mar',loc:'Torrevieja · Costa Blanca',reg:'Costa Blanca',type:'Appartement',price:215000,beds:2,baths:1,m2:78,tag:'Instapklaar',pal:['#86bcd0','#e9dcc2','#3f9aa8']},
+  {n:'Villa Marisol',loc:'Moraira · Costa Blanca',reg:'Costa Blanca',type:'Villa',price:875000,beds:4,baths:3,m2:240,tag:'Zeezicht',pal:['#6fa6c0','#e9d7b4','#3f7e8c'],img:'1613490493576-7fde63acd811'},
+  {n:'Penthouse Azul',loc:'Calpe · Costa Blanca',reg:'Costa Blanca',type:'Penthouse',price:595000,beds:3,baths:2,m2:155,tag:'Nieuwbouw',pal:['#5a90b0','#f0d3a8','#c87f5a'],img:'1502672260266-1c1ef2d93688'},
+  {n:'Apartamento Brisa',loc:'La Manga · Mar Menor',reg:'Mar Menor',type:'Appartement',price:289000,beds:2,baths:2,m2:92,tag:'Aan zee',pal:['#7fb6c9','#e6e0cc','#3f9aa8'],img:'1502005229762-cf1b2da7c5d6'},
+  {n:'Villa Dorada',loc:'Jávea · Costa Blanca',reg:'Costa Blanca',type:'Villa',price:1250000,beds:5,baths:4,m2:320,tag:'Exclusief',pal:['#4f7e96','#f2dcb0','#3f7e8c'],img:'1600585154340-be6161a56a0c'},
+  {n:'Penthouse Sol',loc:'Murcia · Costa Cálida',reg:'Costa Cálida',type:'Penthouse',price:430000,beds:3,baths:2,m2:130,tag:'Dakterras',pal:['#6aa0bc','#ecd9b6','#c87f5a'],img:'1493809842364-78817add7ffb'},
+  {n:'Apartamento Mar',loc:'Torrevieja · Costa Blanca',reg:'Costa Blanca',type:'Appartement',price:215000,beds:2,baths:1,m2:78,tag:'Instapklaar',pal:['#86bcd0','#e9dcc2','#3f9aa8'],img:'1560448204-e02f11c3d0e2'},
 ];
 const propsWrap=$('#props');
 function fmt(n){return '€ '+n.toLocaleString('nl-NL');}
@@ -661,9 +679,10 @@ function renderProps(list){
     el.className='prop';
     el.innerHTML=`
       <div class="prop-art" data-i="${idx}">
-        <span class="prop-badge">${p.tag}</span>
-        <button class="prop-fav" aria-label="Bewaren">♥</button>
+        <span class="prop-badge" style="z-index:2">${p.tag}</span>
+        <button class="prop-fav" style="z-index:2" aria-label="Bewaren">♥</button>
         ${villaScene(idx+1,p.pal)}
+        <img class="photo" alt="${p.n}, ${p.loc}" data-src="${IMG(p.img,900)}" />
       </div>
       <div class="prop-body">
         <div class="prop-loc">${p.loc}</div>
@@ -678,6 +697,7 @@ function renderProps(list){
   // wire interactions
   $$('.prop-fav',propsWrap).forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();b.classList.toggle('on');}));
   $$('.prop-art',propsWrap).forEach(a=>a.addEventListener('click',()=>openLB(+a.dataset.i)));
+  loadPhotos(propsWrap);
 }
 let activeFilter='all';
 function applyFilters(){
@@ -713,29 +733,35 @@ function regionScene(seed,pal){
     <path d="M0 220 Q120 195 240 220 T480 220 V300 H0Z" fill="rgba(0,0,0,.22)"/></svg>`;
 }
 const regions=[
-  {n:'Costa Blanca',d:'Wit strand & levendige badplaatsen',big:true,pal:['#5a90b0','#8fb6c9','#e9d7b4']},
-  {n:'Costa Cálida',d:'Zon het hele jaar door',pal:['#6aa0bc','#c8a374','#9c7c43']},
-  {n:'Mar Menor',d:'Warme lagune & watersport',pal:['#7fb6c9','#a9c7cd','#3f9aa8']},
-  {n:'Jávea & Moraira',d:'Groen, baaien & exclusiviteit',pal:['#4f7e96','#7fa98c','#2f6f4f']},
-  {n:'Torrevieja',d:'Betaalbaar wonen aan zee',pal:['#86bcd0','#e9dcc2','#c87f5a']},
+  {n:'Costa Blanca',d:'Wit strand & levendige badplaatsen',big:true,pal:['#5a90b0','#8fb6c9','#e9d7b4'],img:'1512453979798-5ea266f8880c'},
+  {n:'Costa Cálida',d:'Zon het hele jaar door',pal:['#6aa0bc','#c8a374','#9c7c43'],img:'1504893524553-b855bce32c67'},
+  {n:'Mar Menor',d:'Warme lagune & watersport',pal:['#7fb6c9','#a9c7cd','#3f9aa8'],img:'1507525428034-b723cf961d3e'},
+  {n:'Jávea & Moraira',d:'Groen, baaien & exclusiviteit',pal:['#4f7e96','#7fa98c','#2f6f4f'],img:'1533104816931-20fa691ff6ca'},
+  {n:'Torrevieja',d:'Betaalbaar wonen aan zee',pal:['#86bcd0','#e9dcc2','#c87f5a'],img:'1559827260-dc66d52bef19'},
 ];
 const layoutR=['big','','','',''];
 const regWrap=$('#regions');
 regions.forEach((r,i)=>{
   const d=document.createElement('div');
   d.className='region '+(layoutR[i]||'');
-  d.innerHTML=regionScene(i+1,r.pal)+`<div class="cap"><b>${r.n}</b><span>${r.d}</span></div>`;
+  d.innerHTML=regionScene(i+1,r.pal)+`<img class="photo" alt="${r.n}" data-src="${IMG(r.img,r.big?1200:700)}" />`+`<div class="cap" style="z-index:3"><b>${r.n}</b><span>${r.d}</span></div>`;
   d.addEventListener('click',()=>{$('#sRegion').value=(r.n==='Jávea & Moraira'||r.n==='Torrevieja')?'Costa Blanca':r.n;
     $('#searchbar').dispatchEvent(new Event('submit'));});
   regWrap.appendChild(d);
 });
+loadPhotos(regWrap);
+
+/* statische foto's (hero, over ons) */
+loadPhotos(document);
 
 /* ---- lightbox (property gallery) ---- */
 const lb=$('#lb'),lbStage=$('#lbStage'),lbCap=$('#lbCap');let lbI=0;
 function renderLB(){
   const p=properties[lbI];
-  lbStage.querySelectorAll('svg').forEach(n=>n.remove());
+  lbStage.querySelectorAll('svg,.photo').forEach(n=>n.remove());
   lbStage.insertAdjacentHTML('afterbegin',villaScene(lbI+1,p.pal).replace('class="scene-svg"','style="position:absolute;inset:0;width:100%;height:100%"'));
+  lbStage.insertAdjacentHTML('afterbegin',`<img class="photo" alt="${p.n}" data-src="${IMG(p.img,1600)}" />`);
+  loadPhotos(lbStage);
   lbCap.innerHTML=`${p.n} — ${fmt(p.price)}<small>${p.loc} · ${p.beds} slpk · ${p.baths} badk · ${p.m2} m²</small>`;
 }
 function openLB(i){lbI=i;renderLB();lb.classList.add('open');document.body.style.overflow='hidden';}

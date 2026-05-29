@@ -22,7 +22,19 @@ Alles zit in **één bestand** (`index.html`) — gewoon openen in de browser, k
 - Volledig **responsief** met fullscreen mobiel menu
 - Respecteert `prefers-reduced-motion`
 
-## Beelden zonder externe bestanden
+## Royal Home (royalhome/index.html)
+
+Aparte demo in de stijl van een luxe Spaanse makelaardij. Deze versie gebruikt
+**echte stockfoto's (Unsplash)** voor de hero, woningen, regio's en lightbox.
+Elke foto is gelaagd boven een SVG-scène: laadt een foto niet (offline of
+geblokkeerd netwerk), dan verschijnt automatisch de SVG-fallback, zodat de site
+er nooit kapot uitziet. Open het bestand op een gewone internetverbinding om de
+echte fotografie te zien.
+
+Eigen foto's? Vervang de Unsplash-ID's in de `properties`/`regions`-arrays en de
+`data-src` van de hero/over-ons `<img class="photo">` door je eigen URL's of paden.
+
+## Beelden zonder externe bestanden (hotel-site)
 
 Het netwerkbeleid van de bouwomgeving blokkeert externe afbeeldingen/CDN's,
 daarom zijn **alle "foto's" als SVG/CSS-scènes** opgebouwd. Het bestand werkt
