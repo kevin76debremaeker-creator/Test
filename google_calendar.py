@@ -4,12 +4,13 @@ Schrijft afspraken naar één centrale agenda via een service-account.
 Zie SETUP_GOOGLE_AGENDA.md voor het opzetten van de credentials.
 """
 import os
+import secrets
 import datetime
 from zoneinfo import ZoneInfo
 
-# Volledige calendar-scope: nodig om events te lezen (beschikbaarheid),
-# aan te maken en te verwijderen.
-_SCOPES = ["https://www.googleapis.com/auth/calendar"]
+# Least privilege: alleen events lezen/schrijven/verwijderen — geen toegang
+# tot agenda-instellingen of deelrechten.
+_SCOPES = ["https://www.googleapis.com/auth/calendar.events"]
 
 _TZ = os.environ.get("TIMEZONE", "Europe/Amsterdam")
 _CALENDAR_ID = os.environ.get("GOOGLE_CALENDAR_ID", "primary")
@@ -107,6 +108,10 @@ def create_event(booking):
     if booking.get("notes"):
         desc.append(f'Opmerking: {booking["notes"]}')
 
+    # Geheim annuleer-token: alleen wie het event aanmaakte (en het token
+    # kreeg) kan de afspraak later weer verwijderen.
+    cancel_token = secrets.token_urlsafe(16)
+
     body = {
         "summary": summary,
         "description": "\n".join(desc),
@@ -116,14 +121,23 @@ def create_event(booking):
             "private": {
                 "barberId": str(booking.get("barberId", "any")),
                 "serviceId": str(booking.get("serviceId", "")),
+                "cancelToken": cancel_token,
                 "source": "barber-planner",
             }
         },
     }
-    return service.events().insert(calendarId=_CALENDAR_ID, body=body).execute()
+    created = service.events().insert(calendarId=_CALENDAR_ID, body=body).execute()
+    created["_cancelToken"] = cancel_token  # teruggeven aan de aanroeper
+    return created
 
 
-def delete_event(event_id):
-    """Verwijder een afspraak uit de agenda."""
+def delete_event(event_id, token=None):
+    """Verwijder een afspraak, maar alleen met het juiste annuleer-token."""
     service = _get_service()
+    ev = service.events().get(calendarId=_CALENDAR_ID, eventId=event_id).execute()
+    stored = (
+        ev.get("extendedProperties", {}).get("private", {}).get("cancelToken", "")
+    )
+    if not stored or not token or not secrets.compare_digest(str(token), stored):
+        raise CalendarError("Niet geautoriseerd om deze afspraak te annuleren.")
     service.events().delete(calendarId=_CALENDAR_ID, eventId=event_id).execute()

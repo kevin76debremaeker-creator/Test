@@ -481,7 +481,7 @@
 
     // Lokaal bijhouden zodat de klant 't terugziet onder "Mijn afspraken".
     const bookings = loadBookings();
-    bookings.push({ ...booking, id: Date.now(), eventId: result.eventId });
+    bookings.push({ ...booking, id: Date.now(), eventId: result.eventId, cancelToken: result.cancelToken });
     saveBookings(bookings);
 
     const d = new Date(state.date + 'T00:00:00');
@@ -530,7 +530,7 @@
         if (!confirm('Weet je zeker dat je deze afspraak wilt annuleren?')) return;
         if (b.eventId) {
           try {
-            const res = await fetch(`${API_BASE}/api/booking/${b.eventId}`, { method: 'DELETE' });
+            const res = await fetch(`${API_BASE}/api/booking/${b.eventId}?token=${encodeURIComponent(b.cancelToken || '')}`, { method: 'DELETE' });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Onbekende fout');
           } catch (e) {

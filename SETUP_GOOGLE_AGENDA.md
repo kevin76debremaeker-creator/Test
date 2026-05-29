@@ -75,6 +75,48 @@ van de kapper. Annuleren via "Mijn afspraken" verwijdert het event ook weer.
 De kapper (`barberId`) wordt opgeslagen in `extendedProperties.private` van
 het event, zodat beschikbaarheid per kapper klopt.
 
+## Beveiliging & privacy (AVG/GDPR)
+
+De planner verzamelt **persoonsgegevens** (naam, telefoon, e-mail). Houd je
+aan onderstaande punten om een datalek te voorkomen.
+
+### Ingebouwd in de code
+- **Annuleren is beveiligd**: elke afspraak krijgt een geheim `cancelToken`.
+  Zonder dat token kan niemand een afspraak verwijderen (geen willekeurig
+  wissen via geraden event-ID's).
+- **Server-side validatie + lengtelimieten** op alle velden — front-end
+  checks zijn immers te omzeilen.
+- **Rate limiting** (standaard 10 boekingen/uur per IP) tegen spam en het
+  vollopen van de agenda. Aan te passen via `BOOK_RATE_MAX` / `BOOK_RATE_WINDOW`.
+- **Minimale rechten**: het service-account gebruikt alleen de
+  `calendar.events`-scope, geen toegang tot agenda-instellingen.
+- **Geen PII in beschikbaarheids-API**: `/api/availability` geeft alleen
+  tijd + kapper terug, nooit klantgegevens.
+- **Debugger staat uit** in productie (alleen aan met `FLASK_DEBUG=1` lokaal).
+- Foutmeldingen lekken geen interne details naar de gebruiker.
+
+### Wat jij moet regelen vóór productie
+- [ ] **HTTPS/TLS verplicht.** Zonder TLS gaan naam/telefoon/e-mail in
+      platte tekst over het netwerk. Zet de app achter een reverse proxy
+      (nginx/Caddy) of platform met TLS.
+- [ ] **Gebruik een echte WSGI-server** (gunicorn/uwsgi), niet de Flask
+      dev-server. Bijv.: `gunicorn -w 2 -b 127.0.0.1:5000 server:app`.
+- [ ] **Bescherm `service-account.json`**: rechten `chmod 600`, nooit in git,
+      nooit in een publieke map. Roteer de sleutel als die ooit lekt
+      (Google Cloud → service-account → Keys).
+- [ ] **Privacyverklaring + grondslag**: informeer klanten welke gegevens je
+      bewaart, waarom (uitvoeren afspraak) en hoe lang. Voeg een
+      toestemmings-/akkoord-vinkje toe als je dat wenst.
+- [ ] **Bewaartermijn**: verwijder oude afspraken/gegevens periodiek
+      (dataminimalisatie).
+- [ ] **Verwerkersovereenkomst met Google** (Google Workspace Data Processing
+      Amendment) als je zakelijk persoonsgegevens in Google Agenda verwerkt.
+- [ ] Overweeg **CAPTCHA** bij misbruik ondanks rate limiting.
+
+> De client bewaart in `localStorage` alleen het eigen overzicht van de klant
+> (inclusief het `cancelToken`) op diens eigen apparaat — dit staat niet op
+> een server en is niet voor anderen zichtbaar.
+
 ## Problemen oplossen
 
 - **"Service-account bestand niet gevonden"** → pad in `GOOGLE_SERVICE_ACCOUNT_FILE`
